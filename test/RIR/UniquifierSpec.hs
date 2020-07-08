@@ -10,10 +10,11 @@ import           Test.Hspec
 spec :: Spec
 spec = do
   describe "uniquify" $ do
-    it "uniquifies shadowed vars" $ do
-      uniquify input `shouldBe` expected
+    it "uniquifies shadowed vars" $ shadowedVarsSpec
+    it "doesn't change term with no vars" $ noVarsSpec
+
+shadowedVarsSpec = uniquify input `shouldBe` expected
  where
-  input :: Term
   input = TermLet
     (Var "myVar")
     (TermVal (ValueInt 42))
@@ -26,7 +27,6 @@ spec = do
         (TermVar (Var "myVar"))
       )
     )
-  expected :: Term
   expected = TermLet
     (Var "_1")
     (TermVal (ValueInt 42))
@@ -38,3 +38,8 @@ spec = do
                (TermVar (Var "_3"))
       )
     )
+
+noVarsSpec = uniquify input `shouldBe` expected
+ where
+  input    = TermAdd (TermVal (ValueInt 52)) (TermNeg (TermVal (ValueInt 10)))
+  expected = input

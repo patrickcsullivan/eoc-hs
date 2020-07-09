@@ -1,5 +1,5 @@
-module RIR.Uniquifier
-  ( uniquify
+module RIR.ArgUniquifier
+  ( uniquifyArgs
   )
 where
 
@@ -13,7 +13,7 @@ data Ctx = Ctx
     {- | The next number that will be used when generating a unique variable
     name.
     -}
-    { ctxCounter :: !Int
+    { ctxNextVar :: !Int
 
     {- | Maps variable names from source code to generated unique variable
     names. Contains only variables that are currently in scope.
@@ -21,27 +21,27 @@ data Ctx = Ctx
     , ctxVarTab :: !(M.Map Var Var)
     }
 
-{- | Create a new context with a counter at the given value and an empty
-variable table.
+{- | Create a new context with an empty variable table and where the next
+generated variable name will contain the given value.
 -}
 newCtx :: Int -> Ctx
-newCtx counter = Ctx { ctxCounter = counter, ctxVarTab = M.empty }
+newCtx nextVar = Ctx { ctxNextVar = nextVar, ctxVarTab = M.empty }
 
-{- | Uniquifier's state monad.
+{- | ArgUniquifier's state monad.
 -}
-type Uniquifier a = State Ctx a
+type ArgUniquifier a = State Ctx a
 
 {- | Look up the generated variable for a given source variable in the variable
 table.
 -}
-lookupGendVar :: Var -> Uniquifier (Maybe Var)
+lookupGendVar :: Var -> ArgUniquifier (Maybe Var)
 lookupGendVar srcVar = do
   ctx <- get
   return $ M.lookup srcVar (ctxVarTab ctx)
 
 {- | Insert a mapping between a source variable and a generated variable.
 -}
-insertSrcToGendVar :: Var -> Var -> Uniquifier ()
+insertSrcToGendVar :: Var -> Var -> ArgUniquifier ()
 insertSrcToGendVar srcVar gendVar = do
   ctx <- get
   let varTab' = M.insert srcVar gendVar (ctxVarTab ctx)
@@ -50,7 +50,7 @@ insertSrcToGendVar srcVar gendVar = do
 
 {-| Delete a mapping for the given source variable.
 -}
-deleteSrcToGendVar :: Var -> Uniquifier ()
+deleteSrcToGendVar :: Var -> ArgUniquifier ()
 deleteSrcToGendVar srcVar = do
   ctx <- get
   let varTab' = M.delete srcVar (ctxVarTab ctx)
@@ -62,43 +62,43 @@ source-to-generated variable mapping in the context, potentially overwriting a
 previously saved mapping for the same source variable name. Increment the
 context's coounter. Return the generated variable. 
 -}
-genVar :: Var -> Uniquifier Var
+genVar :: Var -> ArgUniquifier Var
 genVar srcVar = do
   ctx <- get
-  let counter = ctxCounter ctx
-  let gendVar = Var ("_" ++ show counter)
+  let nextVar = ctxNextVar ctx
+  let gendVar = Var ("_" ++ show nextVar)
   let varTab' = M.insert srcVar gendVar (ctxVarTab ctx)
-  put $ ctx { ctxCounter = counter + 1, ctxVarTab = varTab' }
+  put $ ctx { ctxNextVar = nextVar + 1, ctxVarTab = varTab' }
   return gendVar
 
 {-| Replace variables the term with with generated unique variables. 
 -}
-uniquifyTerm :: Term -> Uniquifier Term
-uniquifyTerm TermRead = do
+uniquify :: Term -> ArgUniquifier Term
+uniquify TermRead = do
   return TermRead
 
-uniquifyTerm (TermVal val) = do
+uniquify (TermVal val) = do
   return (TermVal val)
 
-uniquifyTerm (TermNeg trm) = do
-  trm' <- uniquifyTerm trm
+uniquify (TermNeg trm) = do
+  trm' <- uniquify trm
   return (TermNeg trm')
 
-uniquifyTerm (TermAdd trmX trmY) = do
-  trmX' <- uniquifyTerm trmX
-  trmY' <- uniquifyTerm trmY
+uniquify (TermAdd trmX trmY) = do
+  trmX' <- uniquify trmX
+  trmY' <- uniquify trmY
   return (TermAdd trmX' trmY')
 
-uniquifyTerm (TermVar var) = do
+uniquify (TermVar var) = do
   ctx <- get
   let gendVar = case M.lookup var (ctxVarTab ctx) of
         Just v  -> v
         Nothing -> error $ "Undefined variable " ++ show var
   return (TermVar gendVar)
 
-uniquifyTerm (TermLet var bnd bdy) = do
+uniquify (TermLet var bnd bdy) = do
     -- Uniquify the binding term.
-  bnd'               <- uniquifyTerm bnd
+  bnd'               <- uniquify bnd
 
   -- If var is already in the table then it must shadow a variable with the same
   -- name. Hold onto the generated variable for the shadowed source variable.
@@ -108,7 +108,7 @@ uniquifyTerm (TermLet var bnd bdy) = do
   gendVar            <- genVar var
 
   -- Uniquify the body term with the newly generated variable in the var table.
-  bdy'               <- uniquifyTerm bdy
+  bdy'               <- uniquify bdy
 
   -- Restore the var table to its state before uniquifying the let term.
   case maybeShadowGendVar of
@@ -123,10 +123,11 @@ uniquifyTerm (TermLet var bnd bdy) = do
 
 {-| Replace variables the term with with generated unique variables. Each
 generated variable name contains an incremented integer with values starting at
-the given counter. Return the transformed term and the final counter value.
+the given value. Return the transformed term and the next available variable
+number.
 -}
-uniquify :: Term -> Int -> (Term, Int)
-uniquify trm counter =
-  let (trm', ctx') = runState (uniquifyTerm trm) (newCtx counter)
-  in  (trm', ctxCounter ctx')
+uniquifyArgs :: Term -> Int -> (Term, Int)
+uniquifyArgs trm nextVar =
+  let (trm', ctx') = runState (uniquify trm) (newCtx nextVar)
+  in  (trm', ctxNextVar ctx')
 

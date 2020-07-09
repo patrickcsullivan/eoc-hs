@@ -13,13 +13,14 @@ data Ctx = Ctx
     {- | The next number that will be used when generating a unique variable
     name.
     -}
-    { ctxCounter :: !Int
+    { ctxNextVar :: !Int
     }
 
-{- | Create a new context with a counter at the given value.
+{- | Create a new context where the next generated variable name will contain
+the given value.
 -}
 newCtx :: Int -> Ctx
-newCtx counter = Ctx { ctxCounter = counter }
+newCtx nextVar = Ctx { ctxNextVar = nextVar }
 
 {- | ArgSimplifier's state monad.
 -}
@@ -31,9 +32,9 @@ generated variable.
 genVar :: ArgSimplifier Var
 genVar = do
   ctx <- get
-  let counter = ctxCounter ctx
-  let gendVar = Var ("_" ++ show counter)
-  put $ ctx { ctxCounter = counter + 1 }
+  let nextVar = ctxNextVar ctx
+  let gendVar = Var ("_" ++ show nextVar)
+  put $ ctx { ctxNextVar = nextVar + 1 }
   return gendVar
 
 {-| Returns true iff the term is a complex operand.
@@ -92,10 +93,10 @@ simplify (TermLet var bnd bdy) = do
 
 {-| Add new variable bindings into the term so that every argument to an
 operation is either a value term or a variable term. Each generated variable
-name contains an incremented integer with values starting at the given counter.
-Return the transformed term and the final counter value.
+name contains an incremented integer with values starting at the given value.
+Return the transformed term and the next available variable number.
 -}
 simplifyArgs :: Term -> Int -> (Term, Int)
-simplifyArgs trm counter =
-  let (trm', ctx') = runState (simplify trm) (newCtx counter)
-  in  (trm', ctxCounter ctx')
+simplifyArgs trm nextVar =
+  let (trm', ctx') = runState (simplify trm) (newCtx nextVar)
+  in  (trm', ctxNextVar ctx')

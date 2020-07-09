@@ -1,19 +1,19 @@
-module RIR.UniquifierSpec
+module RIR.ArgUniquifierSpec
   ( spec
   )
 where
 
 import           RIR.AST
-import           RIR.Uniquifier
+import           RIR.ArgUniquifier
 import           Test.Hspec
 
 spec :: Spec
 spec = do
-  describe "uniquify" $ do
+  describe "uniquifyArgs" $ do
     it "uniquifies shadowed vars" $ shadowedVarsSpec
     it "doesn't change term with no vars" $ noVarsSpec
 
-shadowedVarsSpec = uniquify inputTrm 10 `shouldBe` (expectedTrm, 13)
+shadowedVarsSpec = uniquifyArgs inputTrm 10 `shouldBe` (expectedTrm, 13)
  where
   inputTrm = TermLet
     (Var "myVar")
@@ -39,6 +39,6 @@ shadowedVarsSpec = uniquify inputTrm 10 `shouldBe` (expectedTrm, 13)
       )
     )
 
-noVarsSpec = uniquify inputTrm 0 `shouldBe` (inputTrm, 0)
+noVarsSpec = uniquifyArgs inputTrm 0 `shouldBe` (inputTrm, 0)
  where
   inputTrm = TermAdd (TermVal (ValueInt 52)) (TermNeg (TermVal (ValueInt 10)))

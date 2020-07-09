@@ -5,7 +5,7 @@ import           RIR.AST
 import           RIR.Uniquifier                 ( uniquify )
 
 main :: IO ()
-main = print $ uniquify input
+main = print $ uniquify input 0
 
 input :: Term
 input = TermLet

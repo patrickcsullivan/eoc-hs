@@ -13,9 +13,9 @@ spec = do
     it "uniquifies shadowed vars" $ shadowedVarsSpec
     it "doesn't change term with no vars" $ noVarsSpec
 
-shadowedVarsSpec = uniquify input `shouldBe` expected
+shadowedVarsSpec = uniquify inputTrm 10 `shouldBe` (expectedTrm, 13)
  where
-  input = TermLet
+  inputTrm = TermLet
     (Var "myVar")
     (TermVal (ValueInt 42))
     (TermLet
@@ -27,19 +27,18 @@ shadowedVarsSpec = uniquify input `shouldBe` expected
         (TermVar (Var "myVar"))
       )
     )
-  expected = TermLet
-    (Var "_1")
+  expectedTrm = TermLet
+    (Var "_10")
     (TermVal (ValueInt 42))
     (TermLet
-      (Var "_2")
+      (Var "_11")
       TermRead
-      (TermLet (Var "_3")
-               (TermAdd (TermVar (Var "_1")) (TermNeg (TermVar (Var "_2"))))
-               (TermVar (Var "_3"))
+      (TermLet (Var "_12")
+               (TermAdd (TermVar (Var "_10")) (TermNeg (TermVar (Var "_11"))))
+               (TermVar (Var "_12"))
       )
     )
 
-noVarsSpec = uniquify input `shouldBe` expected
+noVarsSpec = uniquify inputTrm 0 `shouldBe` (inputTrm, 0)
  where
-  input    = TermAdd (TermVal (ValueInt 52)) (TermNeg (TermVal (ValueInt 10)))
-  expected = input
+  inputTrm = TermAdd (TermVal (ValueInt 52)) (TermNeg (TermVal (ValueInt 10)))

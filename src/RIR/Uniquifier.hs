@@ -21,10 +21,11 @@ data Ctx = Ctx
     , ctxVarTab :: !(M.Map Var Var)
     }
 
-{- | Create a new context with a counter at zero and an empty variable table.
+{- | Create a new context with a counter at the given value and an empty
+variable table.
 -}
-newCtx :: Ctx
-newCtx = Ctx { ctxCounter = 0, ctxVarTab = M.empty }
+newCtx :: Int -> Ctx
+newCtx counter = Ctx { ctxCounter = counter, ctxVarTab = M.empty }
 
 {- | Uniquifier's state monad.
 -}
@@ -64,10 +65,10 @@ context's coounter. Return the generated variable.
 genVar :: Var -> Uniquifier Var
 genVar srcVar = do
   ctx <- get
-  let count'  = ctxCounter ctx + 1
-  let gendVar = Var ("_" ++ show count')
+  let counter = ctxCounter ctx
+  let gendVar = Var ("_" ++ show counter)
   let varTab' = M.insert srcVar gendVar (ctxVarTab ctx)
-  put $ ctx { ctxCounter = count', ctxVarTab = varTab' }
+  put $ ctx { ctxCounter = counter + 1, ctxVarTab = varTab' }
   return gendVar
 
 {-| Replace variables the term with with generated unique variables. 
@@ -120,8 +121,12 @@ uniquifyTerm (TermLet var bnd bdy) = do
 
   return (TermLet gendVar bnd' bdy')
 
-{-| Replace variables the term with with generated unique variables. 
+{-| Replace variables the term with with generated unique variables. Each
+generated variable name contains an incremented integer with values starting at
+the given counter. Return the transformed term and the final counter value.
 -}
-uniquify :: Term -> Term
-uniquify trm = let (trm', _) = runState (uniquifyTerm trm) newCtx in trm'
+uniquify :: Term -> Int -> (Term, Int)
+uniquify trm counter =
+  let (trm', ctx') = runState (uniquifyTerm trm) (newCtx counter)
+  in  (trm', ctxCounter ctx')
 

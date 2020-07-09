@@ -1,22 +1,24 @@
 module CIR.AST where
 
-newtype Sym = Sym String deriving Show
+newtype Var = Var { unvar :: String } deriving (Show, Eq, Ord)
 
 data Arg
     = ArgInt Int
-    | ArgVar Sym
-    deriving Show
+    | ArgVar Var
+    deriving (Show, Eq)
 
-data Expr
-    = ExprRead
-    | ExprArg Arg
-    | ExprNeg Arg
-    | ExprAdd Arg Arg
-    deriving Show
+data Term
+    = TermRead
+    | TermArg Arg
+    | TermNeg Arg
+    | TermAdd Arg Arg
+    deriving (Show, Eq)
 
 data Stmt
-    = StmtAssign Sym Expr
+    = StmtAssign Var Term
+    deriving (Show, Eq)
 
 data Tail
     = TailSeq Stmt Tail
-    | TailRet Expr
+    | TailRet Term
+    deriving (Show, Eq)

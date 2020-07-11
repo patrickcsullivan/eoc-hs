@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 38380d0489012f7631602289827fb747ef95072606a13f20e4e1d0ede0c57e9f
+-- hash: c98b69d033905f07e0754c2d3ddb09bba13fe8bc9eda786aa41d409e6b77d24b
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       CIR.AST
+      CIR.VarUncoverer
       Lib
       RIR.ArgSimplifier
       RIR.ArgUniquifier
@@ -61,6 +62,7 @@ test-suite eoc-hs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      CIR.VarUncovererSpec
       RIR.ArgSimplifierSpec
       RIR.ArgUniquifierSpec
       RIR.ControlExplicatorSpec

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd3d741f60725b82cb7eb817d3418e854e26467a83c40f64a76152708753f12c
+-- hash: dbba3adaf04f1668cc048d48253213662ec4c7011f461a45f055f2d703f834dc
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Lib
       PXIR.AST
       PXIR.HomeAssigner
+      PXIR.InstrPatcher
       RIR.ArgSimplifier
       RIR.ArgUniquifier
       RIR.AST
@@ -68,6 +69,7 @@ test-suite eoc-hs-test
       CIR.InstrSelectorSpec
       CIR.VarUncovererSpec
       PXIR.HomeAssignerSpec
+      PXIR.InstrPatcherSpec
       RIR.ArgSimplifierSpec
       RIR.ArgUniquifierSpec
       RIR.ControlExplicatorSpec

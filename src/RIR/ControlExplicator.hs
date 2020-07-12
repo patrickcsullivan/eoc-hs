@@ -66,7 +66,8 @@ explicateLetBinding binding assignTo tail = case binding of
     let tailWithParentAssn = explicateLetBody bdy $ Just (assignTo, tail)
     in  explicateLetBinding bnd (C.Var name) tailWithParentAssn
 
-{-|
+{-| Make the execution order of the RIR term explicit by converting it into a
+CIR tail.
 -}
 explicateControl :: R.Term -> C.Tail
 explicateControl trm = case trm of

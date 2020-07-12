@@ -5,6 +5,7 @@ where
 
 import qualified CIR.AST                       as C
 import           CIR.VarUncoverer
+import qualified Data.Set                      as S
 import           Test.Hspec
 
 spec :: Spec
@@ -18,7 +19,7 @@ basicAddAndNegSpec = uncoverVars input `shouldBe` expected
   input = C.TailSeq
     (C.StmtAssign (C.Var "_0") (C.TermNeg (C.ArgInt 10)))
     (C.TailRet (C.TermAdd (C.ArgInt 52) (C.ArgVar (C.Var "_0"))))
-  expected = [C.Var "_0"]
+  expected = S.singleton (C.Var "_0")
 
 basicAddSpec = uncoverVars input `shouldBe` expected
  where
@@ -34,4 +35,4 @@ basicAddSpec = uncoverVars input `shouldBe` expected
         (C.TailRet (C.TermArg (C.ArgVar (C.Var "y"))))
       )
     )
-  expected = [(C.Var "x.1"), (C.Var "x.2"), (C.Var "y")]
+  expected = S.fromList [(C.Var "x.1"), (C.Var "x.2"), (C.Var "y")]

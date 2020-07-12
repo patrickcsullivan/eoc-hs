@@ -4,10 +4,11 @@ module CIR.VarUncoverer
 where
 
 import           CIR.AST
+import qualified Data.Set                      as S
 
-uncoverFromStmt :: Stmt -> [Var]
-uncoverFromStmt (StmtAssign var _) = [var]
-
-uncoverVars :: Tail -> [Var]
-uncoverVars (TailSeq stmt tail) = uncoverFromStmt stmt ++ uncoverVars tail
-uncoverVars _                   = []
+{- | Get a list of all variables in the tail.
+-}
+uncoverVars :: Tail -> S.Set Var
+uncoverVars (TailSeq stmt tail) = case stmt of
+  (StmtAssign var _) -> S.insert var (uncoverVars tail)
+uncoverVars _ = S.empty

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dbba3adaf04f1668cc048d48253213662ec4c7011f461a45f055f2d703f834dc
+-- hash: c1cceff801fd25d0e16021ee84f978523f9d6039ae38c6b84de5fc4833e11e48
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -30,7 +30,6 @@ library
       CIR.AST
       CIR.InstrSelector
       CIR.VarUncoverer
-      Lib
       PXIR.AST
       PXIR.HomeAssigner
       PXIR.InstrPatcher

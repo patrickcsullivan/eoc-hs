@@ -1,3 +1,10 @@
+{-|
+Module      : RIR.AST
+Description : R Intermediate Representation
+
+An intermediate representation that most closely corresponds to the AST of
+source code.
+-}
 module RIR.AST where
 
 newtype Var = Var { unvar :: String } deriving (Show, Eq, Ord)

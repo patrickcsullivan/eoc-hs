@@ -1,3 +1,7 @@
+{-|
+Module      : CIR.AST
+Description : C-like Intermediate Representation
+-}
 module CIR.AST where
 
 newtype Var = Var { unvar :: String } deriving (Show, Eq, Ord)

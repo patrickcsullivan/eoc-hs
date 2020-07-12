@@ -1,3 +1,7 @@
+{-|
+Module      : PXIR.AST
+Description : Pseudo-X86 Intermediate Representation
+-}
 module PXIR.AST where
 
 import qualified Data.Map                      as M

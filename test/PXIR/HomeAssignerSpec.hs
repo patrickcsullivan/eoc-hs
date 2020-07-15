@@ -19,6 +19,7 @@ basicAddAndNegSpec =
  where
   inputBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 10) (P.ArgVar (P.Var "_0"))
       , P.InstrNegq (P.ArgVar (P.Var "_0"))
       , P.InstrMovq (P.ArgInt 52) (P.ArgReg P.RegRAX)
@@ -28,6 +29,7 @@ basicAddAndNegSpec =
     )
   expectedBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 10) (P.ArgDeref P.RegRBP (-8))
       , P.InstrNegq (P.ArgDeref P.RegRBP (-8))
       , P.InstrMovq (P.ArgInt 52) (P.ArgReg P.RegRAX)
@@ -41,6 +43,7 @@ moveWithSrcDstVars =
  where
   inputBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 10) (P.ArgVar (P.Var "x.1"))
       , P.InstrMovq (P.ArgVar (P.Var "x.1")) (P.ArgVar (P.Var "x.2"))
       , P.InstrMovq (P.ArgVar (P.Var "x.2")) (P.ArgReg P.RegRAX)
@@ -49,6 +52,7 @@ moveWithSrcDstVars =
     )
   expectedBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 10) (P.ArgDeref P.RegRBP (-8))
       , P.InstrMovq (P.ArgDeref P.RegRBP (-8)) (P.ArgDeref P.RegRBP (-16))
       , P.InstrMovq (P.ArgDeref P.RegRBP (-16)) (P.ArgReg P.RegRAX)

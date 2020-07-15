@@ -89,7 +89,7 @@ the correct memory location. Return the space needed for stack variables in
 bytes
 -}
 assignHomesInBlock :: Block -> (Block, Int)
-assignHomesInBlock block =
+assignHomesInBlock (Block label instrs) =
   let (instrs', ctx') = runState assignInInstrs newCtx
-  in  (Block instrs', stackSpace ctx')
-  where assignInInstrs = mapM assignHomesInInstr $ blockInstrs block
+  in  (Block label instrs', stackSpace ctx')
+  where assignInInstrs = mapM assignHomesInInstr instrs

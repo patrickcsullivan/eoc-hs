@@ -35,6 +35,6 @@ instructions that violate that rule are replaced with instructions that adhere
 to the rule. 
 -}
 patchInstructions :: Block -> Block
-patchInstructions (Block instrs) = Block $ do
+patchInstructions (Block label instrs) = Block label $ do
   instr <- instrs
   patchInstruction instr

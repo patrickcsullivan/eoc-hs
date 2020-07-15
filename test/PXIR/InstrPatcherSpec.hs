@@ -19,6 +19,7 @@ noMultMemRefsSpec = patchInstructions inputBlock `shouldBe` inputBlock
  where
   inputBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 10) (P.ArgDeref P.RegRBP (-8))
       , P.InstrNegq (P.ArgDeref P.RegRBP (-8))
       , P.InstrMovq (P.ArgInt 52) (P.ArgReg P.RegRAX)
@@ -31,6 +32,7 @@ movqMultMemRefsSpec = patchInstructions inputBlock `shouldBe` expectedBlock
  where
   inputBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 42) (P.ArgDeref P.RegRBP (-8))
       , P.InstrMovq (P.ArgDeref P.RegRBP (-8)) (P.ArgDeref P.RegRBP (-16))
       , P.InstrMovq (P.ArgDeref P.RegRBP (-16)) (P.ArgReg P.RegRAX)
@@ -38,6 +40,7 @@ movqMultMemRefsSpec = patchInstructions inputBlock `shouldBe` expectedBlock
     )
   expectedBlock =
     (P.Block
+      (P.Label "testBlock")
       [ P.InstrMovq (P.ArgInt 42) (P.ArgDeref P.RegRBP (-8))
       , P.InstrMovq (P.ArgDeref P.RegRBP (-8)) (P.ArgReg P.RegRAX)
       , P.InstrMovq (P.ArgReg P.RegRAX) (P.ArgDeref P.RegRBP (-16))

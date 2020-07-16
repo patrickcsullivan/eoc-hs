@@ -7,11 +7,11 @@ source code.
 -}
 module RIR.AST where
 
-newtype Var = Var { unvar :: String } deriving (Show, Eq, Ord)
+newtype Var = Var { unvar :: String } deriving (Eq, Ord)
 
 data Value
     = ValueInt Int
-    deriving (Show, Eq)
+    deriving Eq
 
 data Term
     = TermRead
@@ -20,4 +20,31 @@ data Term
     | TermAdd Term Term
     | TermVar Var
     | TermLet Var Term Term
-    deriving (Show, Eq)
+    deriving Eq
+
+instance Show Var where
+  show (Var name) = name
+
+instance Show Value where
+  show (ValueInt n) = show n
+
+instance Show Term where
+  show trm = nestedTerm 0 trm
+
+nestedTerm :: Int -> Term -> String
+nestedTerm ws trm = replicate ws ' ' ++ trmStr
+ where
+  trmStr = case trm of
+    TermRead          -> "read"
+    TermVal val       -> show val
+    TermNeg trm       -> "(- " ++ show trm ++ ")"
+    TermAdd trm1 trm2 -> "(+ " ++ show trm1 ++ " " ++ show trm2 ++ ")"
+    TermVar var       -> show var
+    TermLet var bnd bdy ->
+      "(let (["
+        ++ show var
+        ++ ",\n"
+        ++ nestedTerm (ws + 2) bnd
+        ++ ")]\n"
+        ++ nestedTerm (ws + 2) bdy
+        ++ ")"

@@ -1,10 +1,10 @@
-module CIR.InstrSelectorSpec
+module CIR.SelectInstructionsSpec
   ( spec
   )
 where
 
 import qualified CIR.AST                       as C
-import           CIR.InstrSelector
+import           CIR.SelectInstructions
 import qualified PXIR.AST                      as P
 import           Test.Hspec
 

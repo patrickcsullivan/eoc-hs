@@ -1,4 +1,4 @@
-module RIR.ArgUniquifier
+module RIR.UniquifyArgs
   ( uniquifyArgs
   )
 where
@@ -7,7 +7,8 @@ import           Control.Monad.State
 import qualified Data.Map                      as M
 import           RIR.AST
 
-{- | Maintains state necessary for uniquify-ing the variable names in an AST.
+{- | Context that maintains the state necessary for uniquify-ing the variable
+names in an AST.
 -}
 data Ctx = Ctx
     {- | The next number that will be used when generating a unique variable
@@ -27,21 +28,21 @@ generated variable name will contain the given value.
 newCtx :: Int -> Ctx
 newCtx nextVar = Ctx { ctxNextVar = nextVar, ctxVarTab = M.empty }
 
-{- | ArgUniquifier's state monad.
+{- | State monad that wraps the context.
 -}
-type ArgUniquifier a = State Ctx a
+type CtxS a = State Ctx a
 
 {- | Look up the generated variable for a given source variable in the variable
 table.
 -}
-lookupGendVar :: Var -> ArgUniquifier (Maybe Var)
+lookupGendVar :: Var -> CtxS (Maybe Var)
 lookupGendVar srcVar = do
   ctx <- get
   return $ M.lookup srcVar (ctxVarTab ctx)
 
 {- | Insert a mapping between a source variable and a generated variable.
 -}
-insertSrcToGendVar :: Var -> Var -> ArgUniquifier ()
+insertSrcToGendVar :: Var -> Var -> CtxS ()
 insertSrcToGendVar srcVar gendVar = do
   ctx <- get
   let varTab' = M.insert srcVar gendVar (ctxVarTab ctx)
@@ -50,7 +51,7 @@ insertSrcToGendVar srcVar gendVar = do
 
 {-| Delete a mapping for the given source variable.
 -}
-deleteSrcToGendVar :: Var -> ArgUniquifier ()
+deleteSrcToGendVar :: Var -> CtxS ()
 deleteSrcToGendVar srcVar = do
   ctx <- get
   let varTab' = M.delete srcVar (ctxVarTab ctx)
@@ -62,7 +63,7 @@ source-to-generated variable mapping in the context, potentially overwriting a
 previously saved mapping for the same source variable name. Increment the
 context's coounter. Return the generated variable. 
 -}
-genVar :: Var -> ArgUniquifier Var
+genVar :: Var -> CtxS Var
 genVar srcVar = do
   ctx <- get
   let nextVar = ctxNextVar ctx
@@ -73,7 +74,7 @@ genVar srcVar = do
 
 {-| Replace variables the term with with generated unique variables. 
 -}
-uniquify :: Term -> ArgUniquifier Term
+uniquify :: Term -> CtxS Term
 uniquify TermRead = do
   return TermRead
 

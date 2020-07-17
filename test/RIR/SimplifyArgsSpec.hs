@@ -1,10 +1,10 @@
-module RIR.ArgSimplifierSpec
+module RIR.SimplifyArgsSpec
   ( spec
   )
 where
 
 import           RIR.AST
-import           RIR.ArgSimplifier
+import           RIR.SimplifyArgs
 import           Test.Hspec
 
 spec :: Spec

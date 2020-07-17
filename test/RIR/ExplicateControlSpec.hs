@@ -1,11 +1,11 @@
-module RIR.ControlExplicatorSpec
+module RIR.ExplicateControlSpec
   ( spec
   )
 where
 
 import qualified CIR.AST                       as C
 import qualified RIR.AST                       as R
-import           RIR.ControlExplicator
+import           RIR.ExplicateControl
 import           Test.Hspec
 
 spec :: Spec

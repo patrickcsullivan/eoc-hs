@@ -1,4 +1,4 @@
-module RIR.ControlExplicator
+module RIR.ExplicateControl
   ( explicateControl
   )
 where

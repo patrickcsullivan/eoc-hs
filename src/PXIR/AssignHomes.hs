@@ -1,4 +1,4 @@
-module PXIR.HomeAssigner
+module PXIR.AssignHomes
   ( assignHomesInBlock
   )
 where
@@ -7,8 +7,8 @@ import           Control.Monad.State
 import qualified Data.Map                      as M
 import           PXIR.AST
 
-{- | Maintains state necessary for assigning variables to locations on the
-stack.
+{- | Context that maintains the state necessary for assigning variables to
+locations on the stack.
 -}
 data Ctx = Ctx
     {- | Maps symbols to its storage location in the stack frame. Storage
@@ -22,9 +22,9 @@ data Ctx = Ctx
 newCtx :: Ctx
 newCtx = Ctx { ctxVarToOffset = M.empty }
 
-{- | HomeAssigner's state monad.
+{- | State monad that wraps the context.
 -}
-type HomeAssigner a = State Ctx a
+type CtxS a = State Ctx a
 
 {- | Get the space needed for stack variables in bytes.
 -}
@@ -33,7 +33,7 @@ stackSpace ctx = 8 * (M.size $ ctxVarToOffset ctx)
 
 {- | Insert a new variable-to-offset mapping.
 -}
-insertVarOffset :: Var -> Int -> HomeAssigner ()
+insertVarOffset :: Var -> Int -> CtxS ()
 insertVarOffset var off = do
   ctx <- get
   let ctx' = Ctx $ M.insert var off (ctxVarToOffset ctx)
@@ -44,7 +44,7 @@ insertVarOffset var off = do
 not already saved in the state's variable-to-offset mapping then determine the
 variable's offset and save the new variable-to-offset mapping.
 -}
-getHome :: Var -> HomeAssigner Arg
+getHome :: Var -> CtxS Arg
 getHome var = do
   ctx <- get
   case M.lookup var (ctxVarToOffset ctx) of
@@ -57,7 +57,7 @@ getHome var = do
 {- | Replace any variable argument with a dereference argument to the correct
 memory location.
 -}
-assignHomesInArg :: Arg -> HomeAssigner Arg
+assignHomesInArg :: Arg -> CtxS Arg
 assignHomesInArg arg = case arg of
   (ArgVar var) -> getHome var
   _            -> return arg
@@ -65,7 +65,7 @@ assignHomesInArg arg = case arg of
 {- | Replace each variable argument in the instruction with a dereference
 argument to the correct memory location.
 -}
-assignHomesInInstr :: Instr -> HomeAssigner Instr
+assignHomesInInstr :: Instr -> CtxS Instr
 assignHomesInInstr instr = case instr of
   (InstrAddq src dst) -> do
     src' <- assignHomesInArg src

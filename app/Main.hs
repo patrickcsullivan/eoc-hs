@@ -3,15 +3,15 @@ module Main where
 import           Driver
 
 import qualified CIR.AST                       as C
-import           CIR.InstrSelector              ( selectInstructions )
-import           CIR.VarUncoverer               ( uncoverVars )
+import           CIR.SelectInstructions         ( selectInstructions )
+import           CIR.UncoverVars                ( uncoverVars )
 import qualified RIR.AST                       as R
-import           RIR.ArgUniquifier              ( uniquifyArgs )
-import           RIR.ArgSimplifier              ( simplifyArgs )
-import           RIR.ControlExplicator          ( explicateControl )
+import           RIR.UniquifyArgs               ( uniquifyArgs )
+import           RIR.SimplifyArgs               ( simplifyArgs )
+import           RIR.ExplicateControl           ( explicateControl )
 import qualified PXIR.AST                      as P
-import           PXIR.HomeAssigner              ( assignHomesInBlock )
-import           PXIR.InstrPatcher              ( patchInstructions )
+import           PXIR.AssignHomes               ( assignHomesInBlock )
+import           PXIR.PatchInstructions         ( patchInstructions )
 
 main :: IO ()
 main = do

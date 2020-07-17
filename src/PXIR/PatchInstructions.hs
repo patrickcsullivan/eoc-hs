@@ -1,4 +1,4 @@
-module PXIR.InstrPatcher
+module PXIR.PatchInstructions
   ( patchInstructions
   )
 where

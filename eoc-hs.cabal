@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1228239212e5c32a02c625e55caaf5183492cfc4d0dfa4967bd06bc9142875fe
+-- hash: 11e29476a3c347342200c69450aaa1dc9b9fbf4ba70a4c4b57145e7bd7bcc6d2
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -28,16 +28,16 @@ source-repository head
 library
   exposed-modules:
       CIR.AST
-      CIR.InstrSelector
-      CIR.VarUncoverer
+      CIR.SelectInstructions
+      CIR.UncoverVars
       Driver
+      PXIR.AssignHomes
       PXIR.AST
-      PXIR.HomeAssigner
-      PXIR.InstrPatcher
-      RIR.ArgSimplifier
-      RIR.ArgUniquifier
+      PXIR.PatchInstructions
       RIR.AST
-      RIR.ControlExplicator
+      RIR.ExplicateControl
+      RIR.SimplifyArgs
+      RIR.UniquifyArgs
   other-modules:
       Paths_eoc_hs
   hs-source-dirs:
@@ -68,14 +68,14 @@ test-suite eoc-hs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      CIR.InstrSelectorSpec
-      CIR.VarUncovererSpec
+      CIR.SelectInstructionsSpec
+      CIR.UncoverVarsSpec
       Integration.ShadowedVarsSpec
-      PXIR.HomeAssignerSpec
-      PXIR.InstrPatcherSpec
-      RIR.ArgSimplifierSpec
-      RIR.ArgUniquifierSpec
-      RIR.ControlExplicatorSpec
+      PXIR.AssignHomesSpec
+      PXIR.PatchInstructionsSpec
+      RIR.ExplicateControlSpec
+      RIR.SimplifyArgsSpec
+      RIR.UniquifyArgsSpec
       Paths_eoc_hs
   hs-source-dirs:
       test

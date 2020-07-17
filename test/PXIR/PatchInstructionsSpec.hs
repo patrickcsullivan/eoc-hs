@@ -1,10 +1,10 @@
-module PXIR.InstrPatcherSpec
+module PXIR.PatchInstructionsSpec
   ( spec
   )
 where
 
 import qualified PXIR.AST                      as P
-import           PXIR.InstrPatcher
+import           PXIR.PatchInstructions
 import           Test.Hspec
 
 spec :: Spec

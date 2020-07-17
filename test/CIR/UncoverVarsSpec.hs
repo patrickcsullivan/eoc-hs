@@ -1,10 +1,10 @@
-module CIR.VarUncovererSpec
+module CIR.UncoverVarsSpec
   ( spec
   )
 where
 
 import qualified CIR.AST                       as C
-import           CIR.VarUncoverer
+import           CIR.UncoverVars
 import qualified Data.Set                      as S
 import           Test.Hspec
 

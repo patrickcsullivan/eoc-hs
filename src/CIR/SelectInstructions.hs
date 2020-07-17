@@ -1,4 +1,4 @@
-module CIR.InstrSelector
+module CIR.SelectInstructions
   ( selectInstructions
   )
 where

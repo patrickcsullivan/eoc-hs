@@ -1,4 +1,4 @@
-module CIR.VarUncoverer
+module CIR.UncoverVars
   ( uncoverVars
   )
 where

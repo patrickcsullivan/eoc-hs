@@ -1,10 +1,10 @@
-module PXIR.HomeAssignerSpec
+module PXIR.AssignHomesSpec
   ( spec
   )
 where
 
 import qualified PXIR.AST                      as P
-import           PXIR.HomeAssigner
+import           PXIR.AssignHomes
 import           Test.Hspec
 
 spec :: Spec

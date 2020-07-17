@@ -1,4 +1,4 @@
-module RIR.ArgSimplifier
+module RIR.SimplifyArgs
   ( simplifyArgs
   )
 where
@@ -7,7 +7,8 @@ import           Control.Monad.State
 import qualified Data.Map                      as M
 import           RIR.AST
 
-{- | Maintains state necessary for simplifying operation arguments in the AST.
+{- | Context that maintains the state necessary for simplifying operation
+arguments in the AST.
 -}
 data Ctx = Ctx
     {- | The next number that will be used when generating a unique variable
@@ -22,14 +23,14 @@ the given value.
 newCtx :: Int -> Ctx
 newCtx nextVar = Ctx { ctxNextVar = nextVar }
 
-{- | ArgSimplifier's state monad.
+{- | State monad that wraps the context.
 -}
-type ArgSimplifier a = State Ctx a
+type CtxS a = State Ctx a
 
 {-| Generate a unique variable. Increment the context's coounter. Return the
 generated variable. 
 -}
-genVar :: ArgSimplifier Var
+genVar :: CtxS Var
 genVar = do
   ctx <- get
   let nextVar = ctxNextVar ctx
@@ -47,7 +48,7 @@ isComplex _           = True
 {-| Add new variable bindings into the term so that every argument to an
 operation is either a value term or a variable term.
 -}
-simplify :: Term -> ArgSimplifier Term
+simplify :: Term -> CtxS Term
 simplify TermRead      = return TermRead -- No args so just return.
 
 simplify (TermVal val) = return (TermVal val) -- Primitive so no args so just return.

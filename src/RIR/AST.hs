@@ -29,10 +29,10 @@ instance Show Value where
   show (ValueInt n) = show n
 
 instance Show Term where
-  show trm = nestedTerm 0 trm
+  show trm = indentTerm 0 trm
 
-nestedTerm :: Int -> Term -> String
-nestedTerm ws trm = replicate ws ' ' ++ trmStr
+indentTerm :: Int -> Term -> String
+indentTerm ws trm = replicate ws ' ' ++ trmStr
  where
   trmStr = case trm of
     TermRead          -> "read"
@@ -44,7 +44,7 @@ nestedTerm ws trm = replicate ws ' ' ++ trmStr
       "(let (["
         ++ show var
         ++ ",\n"
-        ++ nestedTerm (ws + 2) bnd
+        ++ indentTerm (ws + 2) bnd
         ++ ")]\n"
-        ++ nestedTerm (ws + 2) bdy
+        ++ indentTerm (ws + 2) bdy
         ++ ")"

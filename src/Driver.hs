@@ -14,7 +14,7 @@ import           PXIR.InstrPatcher              ( patchInstructions )
 drive :: R.Term -> String
 drive rTrm =
   let (rTrm' , nextVar)     = uniquifyArgs rTrm 0
-      (rTrm'', _      )     = simplifyArgs rTrm nextVar
+      (rTrm'', _      )     = simplifyArgs rTrm' nextVar
       cTail                 = explicateControl rTrm''
       localVars             = uncoverVars cTail
       pInstrs               = selectInstructions cTail
@@ -35,7 +35,7 @@ adjustStackSpace stackSpace =
   if stackSpace `mod` 16 == 0 then stackSpace else stackSpace + 8
 
 mainBlock :: Int -> P.Label -> P.Block
-mainBlock stackSpace jumpTo = P.Block (P.Label "start") instrs
+mainBlock stackSpace jumpTo = P.Block (P.Label "main") instrs
  where
   instrs =
     [ P.InstrPushq (P.ArgReg P.RegRBP)

@@ -26,17 +26,18 @@ trm = R.TermLet
     R.TermRead
     (R.TermLet
       (R.Var "my_var")
-      (R.TermAdd (R.TermVar (R.Var "my_value"))
+      (R.TermAdd (R.TermVar (R.Var "my_var"))
                  (R.TermNeg (R.TermVar (R.Var "input")))
       )
-      (R.TermVar (R.Var "my_value"))
+      (R.TermVar (R.Var "my_var"))
     )
   )
 
 driveIO :: R.Term -> IO String
 driveIO rTrm = do
   let (rTrm', nextVar) = uniquifyArgs rTrm 0
-  let (rTrm'', _)      = simplifyArgs rTrm nextVar
+  putStrLn $ show rTrm'
+  let (rTrm'', _) = simplifyArgs rTrm' nextVar
   putStrLn $ show rTrm''
   let cTail     = explicateControl rTrm''
   let localVars = uncoverVars cTail

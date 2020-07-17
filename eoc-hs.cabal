@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 11e29476a3c347342200c69450aaa1dc9b9fbf4ba70a4c4b57145e7bd7bcc6d2
+-- hash: 38e7de83e60f90f07c391aa5e7b59ecb0e8bb0b0845e68ce0efbab916a53983e
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Driver
       PXIR.AssignHomes
       PXIR.AST
+      PXIR.LivenessAnalysis.UncoverLive
       PXIR.PatchInstructions
       RIR.AST
       RIR.ExplicateControl
@@ -72,6 +73,7 @@ test-suite eoc-hs-test
       CIR.UncoverVarsSpec
       Integration.ShadowedVarsSpec
       PXIR.AssignHomesSpec
+      PXIR.LivenessAnalysis.UncoverLiveSpec
       PXIR.PatchInstructionsSpec
       RIR.ExplicateControlSpec
       RIR.SimplifyArgsSpec

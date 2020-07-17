@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2937a1375169a8328e4a8c3ff9d266cde2bf4f332a1bd4599455183f89643218
+-- hash: 1228239212e5c32a02c625e55caaf5183492cfc4d0dfa4967bd06bc9142875fe
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -46,6 +46,7 @@ library
       base >=4.7 && <5
     , containers
     , mtl
+    , text
   default-language: Haskell2010
 
 executable eoc-hs-exe
@@ -60,6 +61,7 @@ executable eoc-hs-exe
     , containers
     , eoc-hs
     , mtl
+    , text
   default-language: Haskell2010
 
 test-suite eoc-hs-test
@@ -68,7 +70,7 @@ test-suite eoc-hs-test
   other-modules:
       CIR.InstrSelectorSpec
       CIR.VarUncovererSpec
-      DriverSpec
+      Integration.ShadowedVarsSpec
       PXIR.HomeAssignerSpec
       PXIR.InstrPatcherSpec
       RIR.ArgSimplifierSpec
@@ -84,4 +86,5 @@ test-suite eoc-hs-test
     , eoc-hs
     , hspec
     , mtl
+    , text
   default-language: Haskell2010

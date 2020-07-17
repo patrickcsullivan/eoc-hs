@@ -28,7 +28,7 @@ drive rTrm =
 
 writeBlocks :: P.Block -> P.Block -> P.Block -> String
 writeBlocks main conclusion prog =
-  show prog ++ "\n" ++ "\t.globl main\n" ++ show main ++ show conclusion ++ "\n"
+  show prog ++ "\n" ++ "    .globl main\n" ++ show main ++ show conclusion
 
 adjustStackSpace :: Int -> Int
 adjustStackSpace stackSpace =
@@ -49,7 +49,7 @@ conclusionBlock stackSpace = P.Block (P.Label "conclusion") instrs
  where
   instrs =
     [ P.InstrAddq (P.ArgInt stackSpace) (P.ArgReg P.RegRSP)
-    , P.InstrPushq (P.ArgReg P.RegRBP)
+    , P.InstrPopq (P.ArgReg P.RegRBP)
     , P.InstrRetq
     ]
 

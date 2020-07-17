@@ -80,8 +80,8 @@ instance Show Var where
 instance Show Arg where
   show arg = case arg of
     ArgInt n       -> "$" ++ show n
-    ArgReg r       -> show r
-    ArgDeref r off -> show off ++ "(" ++ show r ++ ")"
+    ArgReg r       -> "%" ++ show r
+    ArgDeref r off -> show off ++ "(%" ++ show r ++ ")"
     ArgVar v       -> "<" ++ show v ++ ">"
 
 instance Show Label where
@@ -103,4 +103,4 @@ instance Show Block where
   show (Block label instrs) = unlines (fmtLabel : fmtInstrs)
    where
     fmtLabel  = show label ++ ":"
-    fmtInstrs = fmap (\instr -> "\t" ++ show instr) instrs
+    fmtInstrs = fmap (\instr -> "    " ++ show instr) instrs

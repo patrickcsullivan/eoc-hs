@@ -23,7 +23,7 @@ data Reg
     | RegR13
     | RegR14
     | RegR15
-    deriving Eq
+    deriving (Eq, Ord)
 
 newtype Var = Var { unvar :: String } deriving (Eq, Ord)
 

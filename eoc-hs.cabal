@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 38e7de83e60f90f07c391aa5e7b59ecb0e8bb0b0845e68ce0efbab916a53983e
+-- hash: 1747132054cceae60777d6e520721d9388cd1505fd140fd38422ebddeb2f7b9b
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Driver
       PXIR.AssignHomes
       PXIR.AST
+      PXIR.LivenessAnalysis.ConflictGraph
       PXIR.LivenessAnalysis.UncoverLive
       PXIR.PatchInstructions
       RIR.AST
@@ -44,7 +45,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      algebraic-graphs ==0.4
+    , base >=4.7 && <5
     , containers
     , mtl
     , text
@@ -58,7 +60,8 @@ executable eoc-hs-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      algebraic-graphs ==0.4
+    , base >=4.7 && <5
     , containers
     , eoc-hs
     , mtl
@@ -73,6 +76,7 @@ test-suite eoc-hs-test
       CIR.UncoverVarsSpec
       Integration.ShadowedVarsSpec
       PXIR.AssignHomesSpec
+      PXIR.LivenessAnalysis.ConflictGraphSpec
       PXIR.LivenessAnalysis.UncoverLiveSpec
       PXIR.PatchInstructionsSpec
       RIR.ExplicateControlSpec
@@ -83,7 +87,8 @@ test-suite eoc-hs-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      algebraic-graphs ==0.4
+    , base >=4.7 && <5
     , containers
     , eoc-hs
     , hspec

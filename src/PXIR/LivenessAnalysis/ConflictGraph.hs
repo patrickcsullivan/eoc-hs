@@ -2,18 +2,23 @@ module PXIR.LivenessAnalysis.ConflictGraph
   ( ConflictGraph
   , ConflictVertex
   , make
+  , maybeVar
   )
 where
 
 import qualified Algebra.Graph                 as G
 import qualified Data.Set                      as S
 import           PXIR.AST
-import           PXIR.LivenessAnalysis.UncoverLive
-                                                ( varsWritten )
 
 type ConflictVertex = Either Var Reg
 
 type ConflictGraph = G.Graph ConflictVertex
+
+{- | If the conflict graph vertex contains a variable then return the variable.
+-}
+maybeVar :: ConflictVertex -> Maybe Var
+maybeVar (Left var) = Just var
+maybeVar _          = Nothing
 
 {- | List of caller-saved registers.
 -}
@@ -64,7 +69,6 @@ instrConflicts (instr, liveAfter) = case instr of
   InstrNegq  dst    -> arithConflicts dst liveAfter
   InstrCallq _      -> callqConflicts liveAfter
   _                 -> G.empty
-  where written = varsWritten instr
 
 {- | Build a conflict graph for the instructions.
 -}

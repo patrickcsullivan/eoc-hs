@@ -1,7 +1,5 @@
 module PXIR.LivenessAnalysis.UncoverLive
   ( liveAfterEach
-  , varsRead
-  , varsWritten
   )
 where
 

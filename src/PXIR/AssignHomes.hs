@@ -6,6 +6,12 @@ where
 import           Control.Monad.State
 import qualified Data.Map                      as M
 import           PXIR.AST
+import           PXIR.LivenessAnalysis.ColorGraph
+                                                ( colorGraph )
+import qualified PXIR.LivenessAnalysis.ConflictGraph
+                                               as CG
+import           PXIR.LivenessAnalysis.UncoverLive
+                                                ( liveAfterEach )
 
 {- | Context that maintains the state necessary for assigning variables to
 locations on the stack.
@@ -93,3 +99,15 @@ assignHomesInBlock (Block label instrs) =
   let (instrs', ctx') = runState assignInInstrs newCtx
   in  (Block label instrs', stackSpace ctx')
   where assignInInstrs = mapM assignHomesInInstr instrs
+
+-- unocoverLive -> conflictGraph -> colorGraph
+
+{- | Assign a color, represented by a natural number, to each variable so that
+no variables that are live at the same time have the same color. Try to not use
+more colors than necessary.
+-}
+assignColors :: [Instr] -> M.Map Var Int
+assignColors = colorGraph . CG.make . liveAfterEach
+
+assignHomes' :: [Instr] -> ([Instr], Int)
+assignHomes' instrs = undefined

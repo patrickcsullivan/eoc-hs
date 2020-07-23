@@ -8,23 +8,27 @@ import           RIR.UniquifyArgs               ( uniquifyArgs )
 import           RIR.SimplifyArgs               ( simplifyArgs )
 import           RIR.ExplicateControl           ( explicateControl )
 import qualified PXIR.AST                      as P
-import           PXIR.AssignHomes               ( assignHomesInBlock )
+import           PXIR.AssignHomes               ( assignHomes )
 import           PXIR.PatchInstructions         ( patchInstructions )
 
 drive :: R.Term -> String
 drive rTrm =
-  let (rTrm' , nextVar)     = uniquifyArgs rTrm 0
-      (rTrm'', _      )     = simplifyArgs rTrm' nextVar
-      cTail                 = explicateControl rTrm''
-      localVars             = uncoverVars cTail
-      pInstrs               = selectInstructions cTail
-      pBlock                = P.Block (P.Label "start") pInstrs
-      (pBlock', stackSpace) = assignHomesInBlock pBlock
-      stackSpace'           = adjustStackSpace stackSpace
-      pBlock''              = patchInstructions pBlock'
-      main                  = mainBlock stackSpace' (P.Label "start")
-      conclusion            = conclusionBlock stackSpace'
-  in  writeBlocks main conclusion pBlock''
+  let (rTrm' , nextVar)      = uniquifyArgs rTrm 0
+      (rTrm'', _      )      = simplifyArgs rTrm' nextVar
+      cTail                  = explicateControl rTrm''
+      localVars              = uncoverVars cTail
+      pInstrs                = selectInstructions cTail
+      (pInstrs', stackSpace) = assignHomes availableRegs pInstrs
+      pBlock                 = P.Block (P.Label "start") pInstrs'
+      stackSpace'            = adjustStackSpace stackSpace
+      pBlock'                = patchInstructions pBlock
+      main                   = mainBlock stackSpace' (P.Label "start")
+      conclusion             = conclusionBlock stackSpace'
+  in  writeBlocks main conclusion pBlock'
+
+availableRegs :: [P.Reg]
+availableRegs =
+  [P.RegRDX, P.RegRCX, P.RegRSI, P.RegRDI, P.RegR8, P.RegR9, P.RegR10, P.RegR11]
 
 writeBlocks :: P.Block -> P.Block -> P.Block -> String
 writeBlocks main conclusion prog =

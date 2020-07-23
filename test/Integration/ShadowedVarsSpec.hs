@@ -31,27 +31,24 @@ input = R.TermLet
 expected :: String
 expected =
   "start:\n\
-    \    movq $42, -8(%rbp)\n\
+    \    movq $42, %rcx\n\
     \    callq read_int\n\
-    \    movq %rax, -16(%rbp)\n\
-    \    movq -16(%rbp), %rax\n\
-    \    movq %rax, -24(%rbp)\n\
-    \    negq -24(%rbp)\n\
-    \    movq -8(%rbp), %rax\n\
-    \    movq %rax, -32(%rbp)\n\
-    \    movq -24(%rbp), %rax\n\
-    \    addq %rax, -32(%rbp)\n\
-    \    movq -32(%rbp), %rax\n\
+    \    movq %rax, %rdx\n\
+    \    movq %rdx, %rdx\n\
+    \    negq %rdx\n\
+    \    movq %rcx, %rcx\n\
+    \    addq %rdx, %rcx\n\
+    \    movq %rcx, %rax\n\
     \    jmp conclusion\n\
     \\n\
     \    .globl main\n\
     \main:\n\
     \    pushq %rbp\n\
     \    movq %rsp, %rbp\n\
-    \    subq $32, %rsp\n\
+    \    subq $0, %rsp\n\
     \    jmp start\n\
     \conclusion:\n\
-    \    addq $32, %rsp\n\
+    \    addq $0, %rsp\n\
     \    popq %rbp\n\
     \    retq\n\
     \"

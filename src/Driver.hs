@@ -56,4 +56,3 @@ conclusionBlock stackSpace = P.Block (P.Label "conclusion") instrs
     , P.InstrPopq (P.ArgReg P.RegRBP)
     , P.InstrRetq
     ]
-

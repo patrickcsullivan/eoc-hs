@@ -19,12 +19,12 @@ drive rTrm =
       localVars              = uncoverVars cTail
       pInstrs                = selectInstructions cTail
       (pInstrs', stackSpace) = assignHomes availableRegs pInstrs
-      pBlock                 = P.Block (P.Label "start") pInstrs'
+      pInstrs''              = patchInstructions pInstrs'
+      pBlock                 = P.Block (P.Label "start") pInstrs''
       stackSpace'            = adjustStackSpace stackSpace
-      pBlock'                = patchInstructions pBlock
       main                   = mainBlock stackSpace' (P.Label "start")
       conclusion             = conclusionBlock stackSpace'
-  in  writeBlocks main conclusion pBlock'
+  in  writeBlocks main conclusion pBlock
 
 availableRegs :: [P.Reg]
 availableRegs =

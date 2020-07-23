@@ -41,18 +41,8 @@ patchUnneededMovq instr = case instr of
 instructions or enforce x86 rules so that the returned instructions are valid
 x86 assembly.
 -}
-patchInstructions' :: [Instr] -> [Instr]
-patchInstructions' instrs = do
+patchInstructions :: [Instr] -> [Instr]
+patchInstructions instrs = do
   i  <- instrs
   i' <- patchUnneededMovq i
   patchDoubleRef i'
-
-{- | Patch instructions in the block so that if an instruction in the given
-block is allowed to have at most one memory reference argument then any
-instructions that violate that rule are replaced with instructions that adhere
-to the rule. 
--}
-patchInstructions :: Block -> Block
-patchInstructions (Block label instrs) = Block label $ do
-  instr <- instrs
-  patchDoubleRef instr

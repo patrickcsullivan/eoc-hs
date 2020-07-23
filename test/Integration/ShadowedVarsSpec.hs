@@ -34,9 +34,7 @@ expected =
     \    movq $42, %rcx\n\
     \    callq read_int\n\
     \    movq %rax, %rdx\n\
-    \    movq %rdx, %rdx\n\
     \    negq %rdx\n\
-    \    movq %rcx, %rcx\n\
     \    addq %rdx, %rcx\n\
     \    movq %rcx, %rax\n\
     \    jmp conclusion\n\

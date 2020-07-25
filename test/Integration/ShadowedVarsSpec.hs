@@ -15,7 +15,7 @@ spec = do
 input :: R.Term
 input = R.TermLet
   (R.Var "my_var")
-  (R.TermVal (R.ValueInt 42))
+  (R.TermInt 42)
   (R.TermLet
     (R.Var "input")
     R.TermRead

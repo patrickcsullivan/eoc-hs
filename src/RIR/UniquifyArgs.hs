@@ -78,8 +78,8 @@ uniquify :: Term -> CtxS Term
 uniquify TermRead = do
   return TermRead
 
-uniquify (TermVal val) = do
-  return (TermVal val)
+uniquify (TermInt n) = do
+  return (TermInt n)
 
 uniquify (TermNeg trm) = do
   trm' <- uniquify trm

@@ -41,7 +41,7 @@ genVar = do
 {-| Returns true iff the term is a complex operand.
 -}
 isComplex :: Term -> Bool
-isComplex (TermVal _) = False
+isComplex (TermInt _) = False
 isComplex (TermVar _) = False
 isComplex _           = True
 
@@ -49,11 +49,11 @@ isComplex _           = True
 operation is either a value term or a variable term.
 -}
 simplify :: Term -> CtxS Term
-simplify TermRead      = return TermRead -- No args so just return.
+simplify TermRead     = return TermRead -- No args so just return.
 
-simplify (TermVal val) = return (TermVal val) -- Primitive so no args so just return.
+simplify (TermInt n ) = return (TermInt n) -- Primitive so no args so just return.
 
-simplify (TermNeg op ) = if isComplex op
+simplify (TermNeg op) = if isComplex op
   then do
     gendVar <- genVar
     op'     <- simplify op

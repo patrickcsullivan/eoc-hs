@@ -21,19 +21,18 @@ alreadySimplifiedSpec = simplifyArgs inputTrm 0 `shouldBe` (expectedTrm, 0)
   inputTrm = TermLet
     (Var "foo")
     (TermLet (Var "bar")
-             (TermVal (ValueInt 10))
-             (TermAdd (TermVal (ValueInt 10)) (TermVar (Var "bar")))
+             (TermInt 10)
+             (TermAdd (TermInt 10) (TermVar (Var "bar")))
     )
     (TermNeg (TermVar (Var "foo")))
   expectedTrm = inputTrm
 
 basicAddAndNegSpec = simplifyArgs inputTrm 5 `shouldBe` (expectedTrm, 6)
  where
-  inputTrm = TermAdd (TermVal (ValueInt 52)) (TermNeg (TermVal (ValueInt 10)))
-  expectedTrm = TermLet
-    (Var "_5")
-    (TermNeg (TermVal (ValueInt 10)))
-    (TermAdd (TermVal (ValueInt 52)) (TermVar (Var "_5")))
+  inputTrm    = TermAdd (TermInt 52) (TermNeg (TermInt 10))
+  expectedTrm = TermLet (Var "_5")
+                        (TermNeg (TermInt 10))
+                        (TermAdd (TermInt 52) (TermVar (Var "_5")))
 
 simplifyNegArgSpec = simplifyArgs inputTrm 10 `shouldBe` (expectedTrm, 11)
  where
@@ -44,26 +43,21 @@ simplifyNegArgSpec = simplifyArgs inputTrm 10 `shouldBe` (expectedTrm, 11)
 simplifyAddArgsSpec = simplifyArgs inputTrm 0 `shouldBe` (expectedTrm, 6)
  where
   inputTrm = TermAdd
-    (TermAdd (TermVal (ValueInt 1)) (TermVal (ValueInt 2)))
-    (TermAdd (TermAdd (TermVal (ValueInt 3)) TermRead)
-             (TermAdd TermRead (TermVal (ValueInt 4)))
-    )
+    (TermAdd (TermInt 1) (TermInt 2))
+    (TermAdd (TermAdd (TermInt 3) TermRead) (TermAdd TermRead (TermInt 4)))
   expectedTrm = TermLet
     (Var "_0")
-    (TermAdd (TermVal (ValueInt 1)) (TermVal (ValueInt 2)))
+    (TermAdd (TermInt 1) (TermInt 2))
     (TermLet
       (Var "_1")
       (TermLet
         (Var "_2")
-        (TermLet (Var "_3")
-                 TermRead
-                 (TermAdd (TermVal (ValueInt 3)) (TermVar (Var "_3")))
-        )
+        (TermLet (Var "_3") TermRead (TermAdd (TermInt 3) (TermVar (Var "_3"))))
         (TermLet
           (Var "_4")
           (TermLet (Var "_5")
                    TermRead
-                   (TermAdd (TermVar (Var "_5")) (TermVal (ValueInt 4)))
+                   (TermAdd (TermVar (Var "_5")) (TermInt 4))
           )
           (TermAdd (TermVar (Var "_2")) (TermVar (Var "_4")))
         )

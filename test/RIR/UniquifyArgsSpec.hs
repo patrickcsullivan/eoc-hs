@@ -17,7 +17,7 @@ shadowedVarsSpec = uniquifyArgs inputTrm 10 `shouldBe` (expectedTrm, 13)
  where
   inputTrm = TermLet
     (Var "myVar")
-    (TermVal (ValueInt 42))
+    (TermInt 42)
     (TermLet
       (Var "input")
       TermRead
@@ -29,7 +29,7 @@ shadowedVarsSpec = uniquifyArgs inputTrm 10 `shouldBe` (expectedTrm, 13)
     )
   expectedTrm = TermLet
     (Var "_10")
-    (TermVal (ValueInt 42))
+    (TermInt 42)
     (TermLet
       (Var "_11")
       TermRead
@@ -40,5 +40,4 @@ shadowedVarsSpec = uniquifyArgs inputTrm 10 `shouldBe` (expectedTrm, 13)
     )
 
 noVarsSpec = uniquifyArgs inputTrm 0 `shouldBe` (inputTrm, 0)
- where
-  inputTrm = TermAdd (TermVal (ValueInt 52)) (TermNeg (TermVal (ValueInt 10)))
+  where inputTrm = TermAdd (TermInt 52) (TermNeg (TermInt 10))

@@ -16,10 +16,9 @@ spec = do
 
 basicAddAndNegSpec = explicateControl input `shouldBe` expected
  where
-  input = R.TermLet
-    (R.Var "_0")
-    (R.TermNeg (R.TermVal (R.ValueInt 10)))
-    (R.TermAdd (R.TermVal (R.ValueInt 52)) (R.TermVar (R.Var "_0")))
+  input = R.TermLet (R.Var "_0")
+                    (R.TermNeg (R.TermInt 10))
+                    (R.TermAdd (R.TermInt 52) (R.TermVar (R.Var "_0")))
   expected = C.TailSeq
     (C.StmtAssign (C.Var "_0") (C.TermNeg (C.ArgInt 10)))
     (C.TailRet (C.TermAdd (C.ArgInt 52) (C.ArgVar (C.Var "_0"))))
@@ -30,10 +29,10 @@ nestedLetAssignsSpec = explicateControl input `shouldBe` expected
     (R.Var "y")
     (R.TermLet
       (R.Var "x.1")
-      (R.TermVal (R.ValueInt 20))
+      (R.TermInt 20)
       (R.TermLet
         (R.Var "x.2")
-        (R.TermVal (R.ValueInt 22))
+        (R.TermInt 22)
         (R.TermAdd (R.TermVar (R.Var "x.1")) (R.TermVar (R.Var "x.2")))
       )
     )

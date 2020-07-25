@@ -12,8 +12,8 @@ and var terms since the uniquify args pass should have converted all operator
 args into val or var terms. 
 -}
 rArgToC :: R.Term -> C.Arg
-rArgToC (R.TermVal (R.ValueInt i   )) = C.ArgInt i
-rArgToC (R.TermVar (R.Var      name)) = C.ArgVar (C.Var name)
+rArgToC (R.TermInt n           ) = C.ArgInt n
+rArgToC (R.TermVar (R.Var name)) = C.ArgVar (C.Var name)
 rArgToC _ =
   error
     $ "Uniquify args pass should have converted all operator args into val or var terms"
@@ -31,8 +31,8 @@ explicateLetBody :: R.Term -> Maybe (C.Var, C.Tail) -> C.Tail
 explicateLetBody rTrm maybeVarAndTail = case rTrm of
   R.TermRead ->
     let cTrm = C.TermRead in prependTermToTail cTrm maybeVarAndTail
-  R.TermVal (R.ValueInt i) ->
-    let cTrm = C.TermArg (C.ArgInt i) in prependTermToTail cTrm maybeVarAndTail
+  R.TermInt n ->
+    let cTrm = C.TermArg (C.ArgInt n) in prependTermToTail cTrm maybeVarAndTail
   R.TermNeg op ->
     let cTrm = C.TermNeg (rArgToC op) in prependTermToTail cTrm maybeVarAndTail
   R.TermAdd opX opY ->
@@ -50,8 +50,8 @@ explicateLetBinding binding assignTo tail = case binding of
   R.TermRead ->
     let assigned = C.TermRead
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
-  R.TermVal (R.ValueInt i) ->
-    let assigned = C.TermArg (C.ArgInt i)
+  R.TermInt n ->
+    let assigned = C.TermArg (C.ArgInt n)
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
   R.TermNeg op ->
     let assigned = C.TermNeg (rArgToC op)
@@ -71,11 +71,11 @@ CIR tail.
 -}
 explicateControl :: R.Term -> C.Tail
 explicateControl trm = case trm of
-  R.TermRead                 -> C.TailRet C.TermRead
-  (R.TermVal (R.ValueInt i)) -> C.TailRet (C.TermArg (C.ArgInt i))
-  (R.TermNeg op            ) -> C.TailRet (C.TermNeg (rArgToC op))
-  (R.TermAdd opX opY) -> C.TailRet (C.TermAdd (rArgToC opX) (rArgToC opY))
-  (R.TermVar (R.Var name)  ) -> C.TailRet (C.TermArg (C.ArgVar (C.Var name)))
+  R.TermRead               -> C.TailRet C.TermRead
+  R.TermInt n              -> C.TailRet (C.TermArg (C.ArgInt n))
+  (R.TermNeg op          ) -> C.TailRet (C.TermNeg (rArgToC op))
+  (R.TermAdd opX opY     ) -> C.TailRet (C.TermAdd (rArgToC opX) (rArgToC opY))
+  (R.TermVar (R.Var name)) -> C.TailRet (C.TermArg (C.ArgVar (C.Var name)))
   (R.TermLet (R.Var name) bnd bdy) ->
     let tail = explicateLetBody bdy Nothing
     in  explicateLetBinding bnd (C.Var name) tail

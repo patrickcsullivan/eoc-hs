@@ -27,6 +27,7 @@ data Term
     -- Arithmetic operators
     | TermNeg Term
     | TermAdd Term Term
+    | TermSub Term Term
     -- Language constructs
     | TermVar Var
     | TermLet Var Term Term
@@ -65,6 +66,7 @@ indentTerm ws trm = replicate ws ' ' ++ trmStr
     -- Arithmetic operators
     TermNeg t1    -> operator "-" [t1]
     TermAdd t1 t2 -> operator "+" [t1, t2]
+    TermSub t1 t2 -> operator "-" [t1, t2]
     -- Language constructs
     TermVar var   -> show var
     TermLet var bnd bdy ->

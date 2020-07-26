@@ -115,7 +115,7 @@ instance Show Instr where
     InstrRetQ               -> "retq"
     (InstrXOrQ src  dst )   -> "xorq " ++ show src ++ ", " ++ show dst
     (InstrCmpQ src2 src1)   -> "cmpq " ++ show src2 ++ ", " ++ show src1
-    InstrSet                -> error "show for InstrSet is unhandled"
+    InstrSet                -> error "show for InstrSet is unhandled" -- FIXME
     (InstrJmp label       ) -> "jmp " ++ show label
     (InstrJmpIf CCE  label) -> "je" ++ show label
     (InstrJmpIf CCL  label) -> "jl" ++ show label

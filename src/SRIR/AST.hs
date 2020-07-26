@@ -1,11 +1,11 @@
 {-|
-Module      : RIR.AST
-Description : R Intermediate Representation
+Module      : SRIR.AST
+Description : Shrunk R Intermediate Representation
 
 An intermediate representation that most closely corresponds to the AST of
 source code.
 -}
-module RIR.AST where
+module SRIR.AST where
 
 newtype Var = Var { unvar :: String } deriving (Eq, Ord)
 

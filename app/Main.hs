@@ -1,23 +1,23 @@
 module Main where
 
 import           Driver
-import qualified RIR.AST                       as R
+import qualified SRIR.AST                      as S
 
 
 main :: IO ()
 main = putStrLn $ drive trm
 
-trm = R.TermLet
-  (R.Var "my_var")
-  (R.TermInt 42)
-  (R.TermLet
-    (R.Var "input")
-    R.TermRead
-    (R.TermLet
-      (R.Var "my_var")
-      (R.TermAdd (R.TermVar (R.Var "my_var"))
-                 (R.TermNeg (R.TermVar (R.Var "input")))
+trm = S.TermLet
+  (S.Var "my_var")
+  (S.TermInt 42)
+  (S.TermLet
+    (S.Var "input")
+    S.TermRead
+    (S.TermLet
+      (S.Var "my_var")
+      (S.TermAdd (S.TermVar (S.Var "my_var"))
+                 (S.TermNeg (S.TermVar (S.Var "input")))
       )
-      (R.TermVar (R.Var "my_var"))
+      (S.TermVar (S.Var "my_var"))
     )
   )

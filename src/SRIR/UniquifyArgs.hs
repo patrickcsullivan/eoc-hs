@@ -1,11 +1,11 @@
-module RIR.UniquifyArgs
+module SRIR.UniquifyArgs
   ( uniquifyArgs
   )
 where
 
 import           Control.Monad.State
 import qualified Data.Map                      as M
-import           RIR.AST
+import           SRIR.AST
 
 {- | Context that maintains the state necessary for uniquify-ing the variable
 names in an AST.

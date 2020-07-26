@@ -3,15 +3,15 @@ module Driver where
 import qualified CIR.AST                       as C
 import           CIR.SelectInstructions         ( selectInstructions )
 import           CIR.UncoverVars                ( uncoverVars )
-import qualified RIR.AST                       as R
-import           RIR.UniquifyArgs               ( uniquifyArgs )
-import           RIR.SimplifyArgs               ( simplifyArgs )
-import           RIR.ExplicateControl           ( explicateControl )
+import qualified SRIR.AST                      as S
+import           SRIR.UniquifyArgs              ( uniquifyArgs )
+import           SRIR.SimplifyArgs              ( simplifyArgs )
+import           SRIR.ExplicateControl          ( explicateControl )
 import qualified PXIR.AST                      as P
 import           PXIR.AssignHomes               ( assignHomes )
 import           PXIR.PatchInstructions         ( patchInstructions )
 
-drive :: R.Term -> String
+drive :: S.Term -> String
 drive rTrm =
   let (rTrm' , nextVar)      = uniquifyArgs rTrm 0
       (rTrm'', _      )      = simplifyArgs rTrm' nextVar

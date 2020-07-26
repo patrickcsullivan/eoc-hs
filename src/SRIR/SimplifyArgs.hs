@@ -1,11 +1,11 @@
-module RIR.SimplifyArgs
+module SRIR.SimplifyArgs
   ( simplifyArgs
   )
 where
 
 import           Control.Monad.State
 import qualified Data.Map                      as M
-import           RIR.AST
+import           SRIR.AST
 
 {- | Context that maintains the state necessary for simplifying operation
 arguments in the AST.

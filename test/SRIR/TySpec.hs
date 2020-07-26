@@ -1,11 +1,11 @@
-module RIR.TySpec
+module SRIR.TySpec
   ( spec
   )
 where
 
 import           Data.Either                    ( isLeft )
-import           RIR.AST
-import           RIR.Ty
+import           SRIR.AST
+import           SRIR.Ty
 import           Test.Hspec
 
 spec :: Spec

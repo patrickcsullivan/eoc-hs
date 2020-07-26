@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dec033d4819b5605b8e527a9f612700470ec2195a37903db75063fa4bee04c70
+-- hash: c9d1d9067105086d5362ea0afd497fe5f1d74650da10f8e405c0566de211351e
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -37,11 +37,11 @@ library
       PXIR.LivenessAnalysis.ConflictGraph
       PXIR.LivenessAnalysis.UncoverLive
       PXIR.PatchInstructions
-      RIR.AST
-      RIR.ExplicateControl
-      RIR.SimplifyArgs
-      RIR.Ty
-      RIR.UniquifyArgs
+      SRIR.AST
+      SRIR.ExplicateControl
+      SRIR.SimplifyArgs
+      SRIR.Ty
+      SRIR.UniquifyArgs
   other-modules:
       Paths_eoc_hs
   hs-source-dirs:
@@ -82,10 +82,10 @@ test-suite eoc-hs-test
       PXIR.LivenessAnalysis.ConflictGraphSpec
       PXIR.LivenessAnalysis.UncoverLiveSpec
       PXIR.PatchInstructionsSpec
-      RIR.ExplicateControlSpec
-      RIR.SimplifyArgsSpec
-      RIR.TySpec
-      RIR.UniquifyArgsSpec
+      SRIR.ExplicateControlSpec
+      SRIR.SimplifyArgsSpec
+      SRIR.TySpec
+      SRIR.UniquifyArgsSpec
       Paths_eoc_hs
   hs-source-dirs:
       test

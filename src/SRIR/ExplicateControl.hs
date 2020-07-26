@@ -1,19 +1,19 @@
-module RIR.ExplicateControl
+module SRIR.ExplicateControl
   ( explicateControl
   )
 where
 
 import qualified CIR.AST                       as C
 import qualified Data.Map                      as M
-import qualified RIR.AST                       as R
+import qualified SRIR.AST                      as S
 
-{-| Convert an RIR operator argument to a CIR term. Only works for RIR val terms
+{-| Convert an SRIR.operator argument to a CIR term. Only works for SRIR.val terms
 and var terms since the uniquify args pass should have converted all operator
 args into val or var terms. 
 -}
-rArgToC :: R.Term -> C.Arg
-rArgToC (R.TermInt n           ) = C.ArgInt n
-rArgToC (R.TermVar (R.Var name)) = C.ArgVar (C.Var name)
+rArgToC :: S.Term -> C.Arg
+rArgToC (S.TermInt n           ) = C.ArgInt n
+rArgToC (S.TermVar (S.Var name)) = C.ArgVar (C.Var name)
 rArgToC _ =
   error
     $ "Uniquify args pass should have converted all operator args into val or var terms"
@@ -27,55 +27,55 @@ prependTermToTail trm maybeVarAndTail = case maybeVarAndTail of
   Nothing          -> C.TailRet trm
   Just (var, tail) -> C.TailSeq (C.StmtAssign var trm) tail
 
-explicateLetBody :: R.Term -> Maybe (C.Var, C.Tail) -> C.Tail
+explicateLetBody :: S.Term -> Maybe (C.Var, C.Tail) -> C.Tail
 explicateLetBody rTrm maybeVarAndTail = case rTrm of
-  R.TermRead ->
+  S.TermRead ->
     let cTrm = C.TermRead in prependTermToTail cTrm maybeVarAndTail
-  R.TermInt n ->
+  S.TermInt n ->
     let cTrm = C.TermArg (C.ArgInt n) in prependTermToTail cTrm maybeVarAndTail
-  R.TermNeg op ->
+  S.TermNeg op ->
     let cTrm = C.TermNeg (rArgToC op) in prependTermToTail cTrm maybeVarAndTail
-  R.TermAdd opX opY ->
+  S.TermAdd opX opY ->
     let cTrm = C.TermAdd (rArgToC opX) (rArgToC opY)
     in  prependTermToTail cTrm maybeVarAndTail
-  R.TermVar (R.Var name) ->
+  S.TermVar (S.Var name) ->
     let cTrm = C.TermArg (C.ArgVar (C.Var name))
     in  prependTermToTail cTrm maybeVarAndTail
-  R.TermLet (R.Var name) bnd bdy ->
+  S.TermLet (S.Var name) bnd bdy ->
     let tail = explicateLetBody bdy maybeVarAndTail
     in  explicateLetBinding bnd (C.Var name) tail
 
-explicateLetBinding :: R.Term -> C.Var -> C.Tail -> C.Tail
+explicateLetBinding :: S.Term -> C.Var -> C.Tail -> C.Tail
 explicateLetBinding binding assignTo tail = case binding of
-  R.TermRead ->
+  S.TermRead ->
     let assigned = C.TermRead
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
-  R.TermInt n ->
+  S.TermInt n ->
     let assigned = C.TermArg (C.ArgInt n)
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
-  R.TermNeg op ->
+  S.TermNeg op ->
     let assigned = C.TermNeg (rArgToC op)
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
-  R.TermAdd opX opY ->
+  S.TermAdd opX opY ->
     let assigned = C.TermAdd (rArgToC opX) (rArgToC opY)
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
-  R.TermVar (R.Var name) ->
+  S.TermVar (S.Var name) ->
     let assigned = C.TermArg (C.ArgVar (C.Var name))
     in  C.TailSeq (C.StmtAssign assignTo assigned) tail
-  R.TermLet (R.Var name) bnd bdy ->
+  S.TermLet (S.Var name) bnd bdy ->
     let tailWithParentAssn = explicateLetBody bdy $ Just (assignTo, tail)
     in  explicateLetBinding bnd (C.Var name) tailWithParentAssn
 
-{-| Make the execution order of the RIR term explicit by converting it into a
+{-| Make the execution order of the SRIR.term explicit by converting it into a
 CIR tail.
 -}
-explicateControl :: R.Term -> C.Tail
+explicateControl :: S.Term -> C.Tail
 explicateControl trm = case trm of
-  R.TermRead               -> C.TailRet C.TermRead
-  R.TermInt n              -> C.TailRet (C.TermArg (C.ArgInt n))
-  (R.TermNeg op          ) -> C.TailRet (C.TermNeg (rArgToC op))
-  (R.TermAdd opX opY     ) -> C.TailRet (C.TermAdd (rArgToC opX) (rArgToC opY))
-  (R.TermVar (R.Var name)) -> C.TailRet (C.TermArg (C.ArgVar (C.Var name)))
-  (R.TermLet (R.Var name) bnd bdy) ->
+  S.TermRead               -> C.TailRet C.TermRead
+  S.TermInt n              -> C.TailRet (C.TermArg (C.ArgInt n))
+  (S.TermNeg op          ) -> C.TailRet (C.TermNeg (rArgToC op))
+  (S.TermAdd opX opY     ) -> C.TailRet (C.TermAdd (rArgToC opX) (rArgToC opY))
+  (S.TermVar (S.Var name)) -> C.TailRet (C.TermArg (C.ArgVar (C.Var name)))
+  (S.TermLet (S.Var name) bnd bdy) ->
     let tail = explicateLetBody bdy Nothing
     in  explicateLetBinding bnd (C.Var name) tail

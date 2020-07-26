@@ -1,7 +1,7 @@
-module RIR.Ty where
+module SRIR.Ty where
 
 import qualified Data.Map                      as M
-import           RIR.AST
+import           SRIR.AST
 
 data Ty
   = TyBool

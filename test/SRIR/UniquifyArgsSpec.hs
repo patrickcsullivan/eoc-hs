@@ -1,10 +1,10 @@
-module RIR.UniquifyArgsSpec
+module SRIR.UniquifyArgsSpec
   ( spec
   )
 where
 
-import           RIR.AST
-import           RIR.UniquifyArgs
+import           SRIR.AST
+import           SRIR.UniquifyArgs
 import           Test.Hspec
 
 spec :: Spec

@@ -3,6 +3,8 @@ module Driver where
 import qualified CIR.AST                       as C
 import           CIR.SelectInstructions         ( selectInstructions )
 import           CIR.UncoverVars                ( uncoverVars )
+import qualified RIR.AST                       as R
+import           RIR.Shrink                     ( shrink )
 import qualified SRIR.AST                      as S
 import           SRIR.UniquifyArgs              ( uniquifyArgs )
 import           SRIR.SimplifyArgs              ( simplifyArgs )
@@ -11,11 +13,12 @@ import qualified PXIR.AST                      as P
 import           PXIR.AssignHomes               ( assignHomes )
 import           PXIR.PatchInstructions         ( patchInstructions )
 
-drive :: S.Term -> String
+drive :: R.Term -> String
 drive rTrm =
-  let (rTrm' , nextVar)      = uniquifyArgs rTrm 0
-      (rTrm'', _      )      = simplifyArgs rTrm' nextVar
-      cTail                  = explicateControl rTrm''
+  let sTrm                   = shrink rTrm
+      (sTrm' , nextVar)      = uniquifyArgs sTrm 0
+      (sTrm'', _      )      = simplifyArgs sTrm' nextVar
+      cTail                  = explicateControl sTrm''
       localVars              = uncoverVars cTail
       pInstrs                = selectInstructions cTail
       (pInstrs', stackSpace) = assignHomes availableRegs pInstrs

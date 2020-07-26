@@ -4,7 +4,7 @@ module Integration.ShadowedVarsSpec
 where
 
 import           Driver                         ( drive )
-import qualified SRIR.AST                      as S
+import qualified RIR.AST                       as R
 import           Test.Hspec
 
 spec :: Spec
@@ -12,19 +12,19 @@ spec = do
   describe "drive" $ do
     it "compiles shadowed vars example" $ drive input `shouldBe` expected
 
-input :: S.Term
-input = S.TermLet
-  (S.Var "my_var")
-  (S.TermInt 42)
-  (S.TermLet
-    (S.Var "input")
-    S.TermRead
-    (S.TermLet
-      (S.Var "my_var")
-      (S.TermAdd (S.TermVar (S.Var "my_var"))
-                 (S.TermNeg (S.TermVar (S.Var "input")))
+input :: R.Term
+input = R.TermLet
+  (R.Var "my_var")
+  (R.TermInt 42)
+  (R.TermLet
+    (R.Var "input")
+    R.TermRead
+    (R.TermLet
+      (R.Var "my_var")
+      (R.TermAdd (R.TermVar (R.Var "my_var"))
+                 (R.TermNeg (R.TermVar (R.Var "input")))
       )
-      (S.TermVar (S.Var "my_var"))
+      (R.TermVar (R.Var "my_var"))
     )
   )
 

@@ -1,11 +1,11 @@
 {-|
-Module      : SRIR.AST
-Description : Shrunk R Intermediate Representation
+Module      : RIR.AST
+Description : R Intermediate Representation
 
 An intermediate representation that most closely corresponds to the AST of
 source code.
 -}
-module SRIR.AST where
+module RIR.AST where
 
 newtype Var = Var { unvar :: String } deriving (Eq, Ord)
 
@@ -17,11 +17,17 @@ data Term
     -- Integer comparison operators
     | TermEq Term Term
     | TermLT Term Term
+    | TermLTE Term Term
+    | TermGT Term Term
+    | TermGTE Term Term
     -- Logical operators
+    | TermAnd Term Term
+    | TermOr Term Term
     | TermNot Term
     -- Arithmetic operators
     | TermNeg Term
     | TermAdd Term Term
+    | TermSub Term Term
     -- Language constructs
     | TermVar Var
     | TermLet Var Term Term
@@ -48,13 +54,19 @@ indentTerm ws trm = replicate ws ' ' ++ trmStr
     TermBool b    -> show b
     TermInt  n    -> show n
     -- Integer comparison operators
-    TermEq t1 t2  -> operator "eq?" [t1, t2]
-    TermLT t1 t2  -> operator "<" [t1, t2]
+    TermEq  t1 t2 -> operator "eq?" [t1, t2]
+    TermLT  t1 t2 -> operator "<" [t1, t2]
+    TermLTE t1 t2 -> operator "<=" [t1, t2]
+    TermGT  t1 t2 -> operator ">" [t1, t2]
+    TermGTE t1 t2 -> operator ">=" [t1, t2]
     -- Logical operators
+    TermAnd t1 t2 -> operator "and" [t1, t2]
+    TermOr  t1 t2 -> operator "or" [t1, t2]
     TermNot t1    -> operator "not" [t1]
     -- Arithmetic operators
     TermNeg t1    -> operator "-" [t1]
     TermAdd t1 t2 -> operator "+" [t1, t2]
+    TermSub t1 t2 -> operator "-" [t1, t2]
     -- Language constructs
     TermVar var   -> show var
     TermLet var bnd bdy ->

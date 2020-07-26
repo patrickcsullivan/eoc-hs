@@ -21,20 +21,20 @@ argument as the dst.
 -}
 patchDoubleRef :: Instr -> [Instr]
 patchDoubleRef instr = case instr of
-  (InstrMovq src dst) | isDRef src && isDRef dst ->
-    [InstrMovq src (ArgReg RegRAX), InstrMovq (ArgReg RegRAX) dst]
-  (InstrAddq src dst) | isDRef src && isDRef dst ->
-    [InstrMovq src (ArgReg RegRAX), InstrAddq (ArgReg RegRAX) dst]
-  (InstrSubq src dst) | isDRef src && isDRef dst ->
-    [InstrMovq src (ArgReg RegRAX), InstrSubq (ArgReg RegRAX) dst]
+  (InstrMovQ src dst) | isDRef src && isDRef dst ->
+    [InstrMovQ src (ArgReg RegRAX), InstrMovQ (ArgReg RegRAX) dst]
+  (InstrAddQ src dst) | isDRef src && isDRef dst ->
+    [InstrMovQ src (ArgReg RegRAX), InstrAddQ (ArgReg RegRAX) dst]
+  (InstrSubQ src dst) | isDRef src && isDRef dst ->
+    [InstrMovQ src (ArgReg RegRAX), InstrSubQ (ArgReg RegRAX) dst]
   _ -> [instr]
 
 {- | If the given instruction is a movq with matching a source and destination
 then remove the instruction.
 -}
-patchUnneededMovq :: Instr -> [Instr]
-patchUnneededMovq instr = case instr of
-  (InstrMovq src dst) | src == dst -> []
+patchUnneededMovQ :: Instr -> [Instr]
+patchUnneededMovQ instr = case instr of
+  (InstrMovQ src dst) | src == dst -> []
   _ -> [instr]
 
 {- | Perform various patches on the instructions that either optimize the
@@ -44,5 +44,5 @@ x86 assembly.
 patchInstructions :: [Instr] -> [Instr]
 patchInstructions instrs = do
   i  <- instrs
-  i' <- patchUnneededMovq i
+  i' <- patchUnneededMovQ i
   patchDoubleRef i'

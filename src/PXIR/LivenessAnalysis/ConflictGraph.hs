@@ -63,11 +63,11 @@ callqConflicts liveAfter =
 -}
 instrConflicts :: (Instr, S.Set Var) -> ConflictGraph
 instrConflicts (instr, liveAfter) = case instr of
-  InstrAddq _   dst -> arithConflicts dst liveAfter
-  InstrSubq _   dst -> arithConflicts dst liveAfter
-  InstrMovq src dst -> movqConflicts src dst liveAfter
-  InstrNegq  dst    -> arithConflicts dst liveAfter
-  InstrCallq _      -> callqConflicts liveAfter
+  InstrAddQ _   dst -> arithConflicts dst liveAfter
+  InstrSubQ _   dst -> arithConflicts dst liveAfter
+  InstrMovQ src dst -> movqConflicts src dst liveAfter
+  InstrNegQ  dst    -> arithConflicts dst liveAfter
+  InstrCallQ _      -> callqConflicts liveAfter
   _                 -> G.empty
 
 {- | Build a conflict graph for the instructions.

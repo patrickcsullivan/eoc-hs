@@ -45,17 +45,17 @@ mainBlock :: Int -> P.Label -> P.Block
 mainBlock stackSpace jumpTo = P.Block (P.Label "main") instrs
  where
   instrs =
-    [ P.InstrPushq (P.ArgReg P.RegRBP)
-    , P.InstrMovq (P.ArgReg P.RegRSP) (P.ArgReg P.RegRBP)
-    , P.InstrSubq (P.ArgInt stackSpace) (P.ArgReg P.RegRSP)
-    , P.InstrJumpq jumpTo
+    [ P.InstrPushQ (P.ArgReg P.RegRBP)
+    , P.InstrMovQ (P.ArgReg P.RegRSP) (P.ArgReg P.RegRBP)
+    , P.InstrSubQ (P.ArgInt stackSpace) (P.ArgReg P.RegRSP)
+    , P.InstrJmp jumpTo
     ]
 
 conclusionBlock :: Int -> P.Block
 conclusionBlock stackSpace = P.Block (P.Label "conclusion") instrs
  where
   instrs =
-    [ P.InstrAddq (P.ArgInt stackSpace) (P.ArgReg P.RegRSP)
-    , P.InstrPopq (P.ArgReg P.RegRBP)
-    , P.InstrRetq
+    [ P.InstrAddQ (P.ArgInt stackSpace) (P.ArgReg P.RegRSP)
+    , P.InstrPopQ (P.ArgReg P.RegRBP)
+    , P.InstrRetQ
     ]

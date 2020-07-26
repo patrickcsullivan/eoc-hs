@@ -56,19 +56,19 @@ argument assignment.
 -}
 replaceVarsInInstr :: M.Map Var Arg -> Instr -> Instr
 replaceVarsInInstr varToArg instr = case instr of
-  (InstrAddq src dst) ->
+  (InstrAddQ src dst) ->
     let src' = replaceVarInArg varToArg src
         dst' = replaceVarInArg varToArg dst
-    in  InstrAddq src' dst'
-  (InstrSubq src dst) ->
+    in  InstrAddQ src' dst'
+  (InstrSubQ src dst) ->
     let src' = replaceVarInArg varToArg src
         dst' = replaceVarInArg varToArg dst
-    in  InstrSubq src' dst'
-  (InstrMovq src dst) ->
+    in  InstrSubQ src' dst'
+  (InstrMovQ src dst) ->
     let src' = replaceVarInArg varToArg src
         dst' = replaceVarInArg varToArg dst
-    in  InstrMovq src' dst'
-  (InstrNegq dst) -> let dst' = replaceVarInArg varToArg dst in InstrNegq dst'
+    in  InstrMovQ src' dst'
+  (InstrNegQ dst) -> let dst' = replaceVarInArg varToArg dst in InstrNegQ dst'
   _               -> instr
 
 {- | Caclulate the space on the stack in bytes needed to store the variable.

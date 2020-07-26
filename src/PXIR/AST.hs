@@ -34,18 +34,34 @@ data Arg
     | ArgVar Var
     deriving Eq
 
+{- | Condition code.
+-}
+data CC
+  = CCE -- | Equal.
+  | CCL -- | Less than.
+  | CCLE -- | Less than or equal.
+  | CCG -- | Greater than.
+  | CCGE -- | Greater than or equal.
+  deriving Eq
+
 newtype Label = Label { unlabel :: String } deriving (Eq, Ord)
 
 data Instr
-    = InstrAddq { src :: Arg, dst :: Arg }
-    | InstrSubq { src :: Arg, dst :: Arg }
-    | InstrMovq { src :: Arg, dst :: Arg }
-    | InstrNegq Arg
-    | InstrPushq Arg
-    | InstrPopq Arg
-    | InstrCallq Label
-    | InstrJumpq Label
-    | InstrRetq
+    = InstrAddQ { src :: Arg, dst :: Arg }
+    | InstrSubQ { src :: Arg, dst :: Arg }
+    | InstrMovQ { src :: Arg, dst :: Arg }
+    | InstrNegQ Arg
+    | InstrPushQ Arg
+    | InstrPopQ Arg
+    | InstrCallQ Label
+    | InstrRetQ
+    | InstrXOrQ { src :: Arg, dst :: Arg }
+    | InstrCmpQ { src2 :: Arg, src1 :: Arg }
+    | InstrSet
+    | InstrMovZBQ { src :: Arg, dst :: Arg }
+    | InstrJmp Label
+    | InstrJmpIf CC Label
+    | InstrLabel Label
     deriving Eq
 
 data Block = Block
@@ -89,15 +105,24 @@ instance Show Label where
 
 instance Show Instr where
   show instr = case instr of
-    (InstrAddq src dst) -> "addq " ++ show src ++ ", " ++ show dst
-    (InstrSubq src dst) -> "subq " ++ show src ++ ", " ++ show dst
-    (InstrMovq src dst) -> "movq " ++ show src ++ ", " ++ show dst
-    (InstrNegq  dst   ) -> "negq " ++ show dst
-    (InstrPushq src   ) -> "pushq " ++ show src
-    (InstrPopq  dst   ) -> "popq " ++ show dst
-    (InstrCallq label ) -> "callq " ++ show label
-    (InstrJumpq label ) -> "jmp " ++ show label
-    InstrRetq           -> "retq"
+    (InstrAddQ src dst)     -> "addq " ++ show src ++ ", " ++ show dst
+    (InstrSubQ src dst)     -> "subq " ++ show src ++ ", " ++ show dst
+    (InstrMovQ src dst)     -> "movq " ++ show src ++ ", " ++ show dst
+    (InstrNegQ  dst   )     -> "negq " ++ show dst
+    (InstrPushQ src   )     -> "pushq " ++ show src
+    (InstrPopQ  dst   )     -> "popq " ++ show dst
+    (InstrCallQ label )     -> "callq " ++ show label
+    InstrRetQ               -> "retq"
+    (InstrXOrQ src  dst )   -> "xorq " ++ show src ++ ", " ++ show dst
+    (InstrCmpQ src2 src1)   -> "cmpq " ++ show src2 ++ ", " ++ show src1
+    InstrSet                -> error "show for InstrSet is unhandled"
+    (InstrJmp label       ) -> "jmp " ++ show label
+    (InstrJmpIf CCE  label) -> "je" ++ show label
+    (InstrJmpIf CCL  label) -> "jl" ++ show label
+    (InstrJmpIf CCLE label) -> "jle" ++ show label
+    (InstrJmpIf CCG  label) -> "jg" ++ show label
+    (InstrJmpIf CCGE label) -> "jge" ++ show label
+    InstrLabel label        -> show label ++ ":"
 
 instance Show Block where
   show (Block label instrs) = unlines (fmtLabel : fmtInstrs)

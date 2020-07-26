@@ -40,19 +40,19 @@ basicSpec = do
  where
   output = CG.make (liveAfterEach inputInstrs)
   inputInstrs =
-    [ P.InstrMovq (P.ArgInt 1) (P.ArgVar (P.Var "v"))
-    , P.InstrMovq (P.ArgInt 46) (P.ArgVar (P.Var "w"))
-    , P.InstrMovq (P.ArgVar (P.Var "v")) (P.ArgVar (P.Var "x"))
-    , P.InstrAddq (P.ArgInt 7) (P.ArgVar (P.Var "w"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "y"))
-    , P.InstrAddq (P.ArgInt 4) (P.ArgVar (P.Var "y"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "z"))
-    , P.InstrAddq (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "z"))
-    , P.InstrMovq (P.ArgVar (P.Var "y")) (P.ArgVar (P.Var "t.1"))
-    , P.InstrNegq (P.ArgVar (P.Var "t.1"))
-    , P.InstrMovq (P.ArgVar (P.Var "z")) (P.ArgReg P.RegRAX)
-    , P.InstrAddq (P.ArgVar (P.Var "t.1")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "v"))
+    , P.InstrMovQ (P.ArgInt 46) (P.ArgVar (P.Var "w"))
+    , P.InstrMovQ (P.ArgVar (P.Var "v")) (P.ArgVar (P.Var "x"))
+    , P.InstrAddQ (P.ArgInt 7) (P.ArgVar (P.Var "w"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "y"))
+    , P.InstrAddQ (P.ArgInt 4) (P.ArgVar (P.Var "y"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "z"))
+    , P.InstrAddQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "z"))
+    , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgVar (P.Var "t.1"))
+    , P.InstrNegQ (P.ArgVar (P.Var "t.1"))
+    , P.InstrMovQ (P.ArgVar (P.Var "z")) (P.ArgReg P.RegRAX)
+    , P.InstrAddQ (P.ArgVar (P.Var "t.1")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
   expectedGraph =
     let v  = Left (P.Var "v")
@@ -86,9 +86,9 @@ noConflictsSpec = do
  where
   output = CG.make (liveAfterEach inputInstrs)
   inputInstrs =
-    [ P.InstrMovq (P.ArgInt 1) (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgInt 46) (P.ArgVar (P.Var "y"))
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgInt 46) (P.ArgVar (P.Var "y"))
+    , P.InstrJmp (P.Label "conclusion")
     ]
   expectedGraph =
     let x = Left (P.Var "x")
@@ -101,7 +101,7 @@ addqSpec = do
  where
   output =
     CG.make
-      $ [ ( P.InstrAddq (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
+      $ [ ( P.InstrAddQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
           , S.fromList [(P.Var "w"), (P.Var "x"), (P.Var "y"), (P.Var "z")]
           )
         ]
@@ -119,7 +119,7 @@ addqNoExtraLiveAfterSpec = do
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
   output =
-    CG.make $ [(P.InstrAddq (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
+    CG.make $ [(P.InstrAddQ (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
   expectedGraph = G.vertices [Left (P.Var "x")]
 
 addqNoDstVar = do
@@ -128,7 +128,7 @@ addqNoDstVar = do
  where
   output =
     CG.make
-      $ [ ( P.InstrAddq (P.ArgInt 1) (P.ArgReg P.RegRAX)
+      $ [ ( P.InstrAddQ (P.ArgInt 1) (P.ArgReg P.RegRAX)
           , S.fromList [(P.Var "x"), (P.Var "y"), (P.Var "z")]
           )
         ]
@@ -140,7 +140,7 @@ movqSpec = do
  where
   output =
     CG.make
-      $ [ ( P.InstrMovq (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
+      $ [ ( P.InstrMovQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
           , S.fromList [(P.Var "w"), (P.Var "x"), (P.Var "y"), (P.Var "z")]
           )
         ]
@@ -159,7 +159,7 @@ movqNoExtraLiveAfterSpec = do
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
   output =
-    CG.make $ [(P.InstrMovq (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
+    CG.make $ [(P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
   expectedGraph = G.vertices [Left (P.Var "x")]
 
 movqNoDstVar = do
@@ -168,7 +168,7 @@ movqNoDstVar = do
  where
   output =
     CG.make
-      $ [ ( P.InstrMovq (P.ArgInt 1) (P.ArgReg P.RegRAX)
+      $ [ ( P.InstrMovQ (P.ArgInt 1) (P.ArgReg P.RegRAX)
           , S.fromList [(P.Var "x"), (P.Var "y"), (P.Var "z")]
           )
         ]

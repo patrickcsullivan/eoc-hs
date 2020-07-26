@@ -29,10 +29,10 @@ readSpec = selectInstructions input `shouldBe` expected
   input = C.TailSeq (C.StmtAssign (C.Var "x") C.TermRead)
                     (C.TailRet (C.TermArg (C.ArgVar (C.Var "x"))))
   expected =
-    [ P.InstrCallq (P.Label "read_int")
-    , P.InstrMovq (P.ArgReg P.RegRAX) (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrCallQ (P.Label "read_int")
+    , P.InstrMovQ (P.ArgReg P.RegRAX) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 basicAddAndNegSpec = selectInstructions input `shouldBe` expected
@@ -41,11 +41,11 @@ basicAddAndNegSpec = selectInstructions input `shouldBe` expected
     (C.StmtAssign (C.Var "_0") (C.TermNeg (C.ArgInt 10)))
     (C.TailRet (C.TermAdd (C.ArgInt 52) (C.ArgVar (C.Var "_0"))))
   expected =
-    [ P.InstrMovq (P.ArgInt 10) (P.ArgVar (P.Var "_0"))
-    , P.InstrNegq (P.ArgVar (P.Var "_0"))
-    , P.InstrMovq (P.ArgInt 52) (P.ArgReg P.RegRAX)
-    , P.InstrAddq (P.ArgVar (P.Var "_0")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 10) (P.ArgVar (P.Var "_0"))
+    , P.InstrNegQ (P.ArgVar (P.Var "_0"))
+    , P.InstrMovQ (P.ArgInt 52) (P.ArgReg P.RegRAX)
+    , P.InstrAddQ (P.ArgVar (P.Var "_0")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 addSpec = selectInstructions input `shouldBe` expected
@@ -63,12 +63,12 @@ addSpec = selectInstructions input `shouldBe` expected
       )
     )
   expected =
-    [ P.InstrMovq (P.ArgInt 20) (P.ArgVar (P.Var "x.1"))
-    , P.InstrMovq (P.ArgInt 22) (P.ArgVar (P.Var "x.2"))
-    , P.InstrMovq (P.ArgVar (P.Var "x.1")) (P.ArgVar (P.Var "y"))
-    , P.InstrAddq (P.ArgVar (P.Var "x.2")) (P.ArgVar (P.Var "y"))
-    , P.InstrMovq (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x.1"))
+    , P.InstrMovQ (P.ArgInt 22) (P.ArgVar (P.Var "x.2"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x.1")) (P.ArgVar (P.Var "y"))
+    , P.InstrAddQ (P.ArgVar (P.Var "x.2")) (P.ArgVar (P.Var "y"))
+    , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 addInPlaceLeftArgSpec = selectInstructions input `shouldBe` expected
@@ -81,10 +81,10 @@ addInPlaceLeftArgSpec = selectInstructions input `shouldBe` expected
       (C.TailRet (C.TermArg (C.ArgVar (C.Var "x"))))
     )
   expected =
-    [ P.InstrMovq (P.ArgInt 20) (P.ArgVar (P.Var "x"))
-    , P.InstrAddq (P.ArgInt 22) (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x"))
+    , P.InstrAddQ (P.ArgInt 22) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 addInPlaceLRightArgSpec = selectInstructions input `shouldBe` expected
@@ -97,10 +97,10 @@ addInPlaceLRightArgSpec = selectInstructions input `shouldBe` expected
       (C.TailRet (C.TermArg (C.ArgVar (C.Var "x"))))
     )
   expected =
-    [ P.InstrMovq (P.ArgInt 20) (P.ArgVar (P.Var "x"))
-    , P.InstrAddq (P.ArgInt 22) (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x"))
+    , P.InstrAddQ (P.ArgInt 22) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 addInPlaceBothArgsSpec = selectInstructions input `shouldBe` expected
@@ -114,10 +114,10 @@ addInPlaceBothArgsSpec = selectInstructions input `shouldBe` expected
       (C.TailRet (C.TermArg (C.ArgVar (C.Var "x"))))
     )
   expected =
-    [ P.InstrMovq (P.ArgInt 20) (P.ArgVar (P.Var "x"))
-    , P.InstrAddq (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x"))
+    , P.InstrAddQ (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 negSpec = selectInstructions input `shouldBe` expected
@@ -128,11 +128,11 @@ negSpec = selectInstructions input `shouldBe` expected
                (C.TailRet (C.TermArg (C.ArgVar (C.Var "y"))))
     )
   expected =
-    [ P.InstrMovq (P.ArgInt 20) (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "y"))
-    , P.InstrNegq (P.ArgVar (P.Var "y"))
-    , P.InstrMovq (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "y"))
+    , P.InstrNegQ (P.ArgVar (P.Var "y"))
+    , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]
 
 negInPlaceSpec = selectInstructions input `shouldBe` expected
@@ -143,8 +143,8 @@ negInPlaceSpec = selectInstructions input `shouldBe` expected
                (C.TailRet (C.TermArg (C.ArgVar (C.Var "x"))))
     )
   expected =
-    [ P.InstrMovq (P.ArgInt 20) (P.ArgVar (P.Var "x"))
-    , P.InstrNegq (P.ArgVar (P.Var "x"))
-    , P.InstrMovq (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
-    , P.InstrJumpq (P.Label "conclusion")
+    [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x"))
+    , P.InstrNegQ (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
     ]

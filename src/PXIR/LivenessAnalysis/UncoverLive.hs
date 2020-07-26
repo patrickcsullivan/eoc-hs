@@ -19,15 +19,15 @@ varsRead :: Instr -> S.Set Var
 varsRead instr = S.fromList $ M.mapMaybe argFromVar argsRead
  where
   argsRead = case instr of
-    InstrAddq src dst -> [src, dst]
-    InstrSubq src dst -> [src, dst]
-    InstrMovq src _   -> [src]
-    InstrNegq  dst    -> [dst]
-    InstrPushq src    -> [src]
-    InstrPopq  _      -> []
-    InstrCallq _      -> []
-    InstrJumpq _      -> []
-    InstrRetq         -> []
+    InstrAddQ src dst -> [src, dst]
+    InstrSubQ src dst -> [src, dst]
+    InstrMovQ src _   -> [src]
+    InstrNegQ  dst    -> [dst]
+    InstrPushQ src    -> [src]
+    InstrPopQ  _      -> []
+    InstrCallQ _      -> []
+    InstrJmp   _      -> []
+    InstrRetQ         -> []
 
 {- | Get the set of variables that are written to by the instruction.
 -}
@@ -35,15 +35,15 @@ varsWritten :: Instr -> S.Set Var
 varsWritten instr = S.fromList $ M.mapMaybe argFromVar argsWritten
  where
   argsWritten = case instr of
-    InstrAddq _ dst -> [dst]
-    InstrSubq _ dst -> [dst]
-    InstrMovq _ dst -> [dst]
-    InstrNegq  dst  -> [dst]
-    InstrPushq _    -> []
-    InstrPopq  dst  -> [dst]
-    InstrCallq _    -> []
-    InstrJumpq _    -> []
-    InstrRetq       -> []
+    InstrAddQ _ dst -> [dst]
+    InstrSubQ _ dst -> [dst]
+    InstrMovQ _ dst -> [dst]
+    InstrNegQ  dst  -> [dst]
+    InstrPushQ _    -> []
+    InstrPopQ  dst  -> [dst]
+    InstrCallQ _    -> []
+    InstrJmp   _    -> []
+    InstrRetQ       -> []
 
 {- | Get the set of variables that are live before the instruction.
 -}

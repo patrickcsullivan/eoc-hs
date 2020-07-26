@@ -11,30 +11,30 @@ destination.
 -}
 readInstrs :: P.Arg -> [P.Instr]
 readInstrs dst =
-  [P.InstrCallq (P.Label "read_int"), P.InstrMovq (P.ArgReg P.RegRAX) dst]
+  [P.InstrCallQ (P.Label "read_int"), P.InstrMovQ (P.ArgReg P.RegRAX) dst]
 
 {- | Create PXIR instructions that assign the source argument to the
 destination.
 -}
 movqInstrs :: P.Arg -> P.Arg -> [P.Instr]
-movqInstrs src dst = [P.InstrMovq src dst]
+movqInstrs src dst = [P.InstrMovQ src dst]
 
 {- | Create PXIR instructions that negate the given operand and assign the
 result to the destination.
 -}
 negqInstrs :: P.Arg -> P.Arg -> [P.Instr]
 negqInstrs arg dst = if arg == dst
-  then [P.InstrNegq dst]
-  else [P.InstrMovq arg dst, P.InstrNegq dst]
+  then [P.InstrNegQ dst]
+  else [P.InstrMovQ arg dst, P.InstrNegQ dst]
 
 {- | Create PXIR instructions that add the given operands and assign the result
 to the destination.
 -}
 addqInstrs :: P.Arg -> P.Arg -> P.Arg -> [P.Instr]
 addqInstrs argX argY dst
-  | argX == dst = [P.InstrAddq argY dst]
-  | argY == dst = [P.InstrAddq argX dst]
-  | otherwise   = [P.InstrMovq argX dst, P.InstrAddq argY dst]
+  | argX == dst = [P.InstrAddQ argY dst]
+  | argY == dst = [P.InstrAddQ argX dst]
+  | otherwise   = [P.InstrMovQ argX dst, P.InstrAddQ argY dst]
 
 {- | Create PXIR instructions that evaluate the given term and assign the result
 to the destination.
@@ -70,7 +70,7 @@ cTailToP :: C.Tail -> P.Label -> [P.Instr]
 cTailToP tail jumpOnRet = case tail of
   (C.TailSeq stmt tl) -> (cStmtToP stmt) ++ (cTailToP tl jumpOnRet)
   (C.TailRet trm) ->
-    (evalAndAssignInstrs trm (P.ArgReg P.RegRAX)) ++ [P.InstrJumpq jumpOnRet]
+    (evalAndAssignInstrs trm (P.ArgReg P.RegRAX)) ++ [P.InstrJmp jumpOnRet]
 
 {-| Convert the CIR tail into PXIR instructions that return by jumping to the
 "concolusion" label.

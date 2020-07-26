@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 85455a736242761b01b4de2ac2e2efecfd417e8ca998353273efd3f9d91a3e57
+-- hash: dec033d4819b5605b8e527a9f612700470ec2195a37903db75063fa4bee04c70
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -84,6 +84,7 @@ test-suite eoc-hs-test
       PXIR.PatchInstructionsSpec
       RIR.ExplicateControlSpec
       RIR.SimplifyArgsSpec
+      RIR.TySpec
       RIR.UniquifyArgsSpec
       Paths_eoc_hs
   hs-source-dirs:

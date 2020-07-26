@@ -17,6 +17,10 @@ instance Show Ty where
 -}
 type Ctx = M.Map Var Ty
 
+{- | Empty typing context.
+-}
+emptyCtx = M.empty
+
 {- | Check the type of the term.
 -}
 typeOf :: Ctx -> Term -> Either String Ty
@@ -42,7 +46,7 @@ typeOf ctx trm = case trm of
   -- Language constructs
   (TermVar v    ) -> case M.lookup v ctx of
     Just ty -> return ty
-    Nothing -> fail "undefined variable"
+    Nothing -> Left "undefined variable"
   (TermLet v t1 t2) -> do
     tyT1 <- typeOf ctx t1
     let ctx' = M.insert v tyT1 ctx
@@ -50,13 +54,13 @@ typeOf ctx trm = case trm of
   (TermIf t1 t2 t3) -> do
     tyT1 <- typeOf ctx t1
     if tyT1 /= TyBool
-      then fail "if conditional must be Bool"
+      then Left "if conditional must be Bool"
       else do
         tyT2 <- typeOf ctx t2
         tyT3 <- typeOf ctx t3
         if tyT2 == tyT3
           then return tyT2
-          else fail "if arms must have matching types"
+          else Left "if arms must have matching types"
 
 typeOfCompOp :: Ctx -> Term -> Term -> Either String Ty
 typeOfCompOp ctx t1 t2 = do
@@ -64,12 +68,12 @@ typeOfCompOp ctx t1 t2 = do
   tyT2 <- typeOf ctx t2
   if tyT1 == TyInt && tyT2 == TyInt
     then return TyBool
-    else fail "comparison args must be Int"
+    else Left "comparison args must be Int"
 
 typeOfUnaryLogicalOp :: Ctx -> Term -> Either String Ty
 typeOfUnaryLogicalOp ctx t1 = do
   tyT1 <- typeOf ctx t1
-  if tyT1 == TyBool then return TyBool else fail "logical op args must be Bool"
+  if tyT1 == TyBool then return TyBool else Left "logical op args must be Bool"
 
 typeOfBinaryLogicalOp :: Ctx -> Term -> Term -> Either String Ty
 typeOfBinaryLogicalOp ctx t1 t2 = do
@@ -77,14 +81,14 @@ typeOfBinaryLogicalOp ctx t1 t2 = do
   tyT2 <- typeOf ctx t2
   if tyT1 == TyBool && tyT2 == TyBool
     then return TyBool
-    else fail "logical op args must be Bool"
+    else Left "logical op args must be Bool"
 
 typeOfUnaryArithOp :: Ctx -> Term -> Either String Ty
 typeOfUnaryArithOp ctx t1 = do
   tyT1 <- typeOf ctx t1
   if tyT1 == TyInt
     then return TyInt
-    else fail "arithmetic operator args must be Int"
+    else Left "arithmetic operator args must be Int"
 
 typeOfBinaryArithOp :: Ctx -> Term -> Term -> Either String Ty
 typeOfBinaryArithOp ctx t1 t2 = do
@@ -92,4 +96,4 @@ typeOfBinaryArithOp ctx t1 t2 = do
   tyT2 <- typeOf ctx t2
   if tyT1 == TyInt && tyT2 == TyInt
     then return TyInt
-    else fail "arithmetic operator args must be Int"
+    else Left "arithmetic operator args must be Int"

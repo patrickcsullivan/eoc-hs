@@ -14,8 +14,10 @@ spec = do
   describe "explicateControl" $ do
     it "explicates control in basic add and neg example" $ basicAddAndNegSpec
     it "explicates control for let binding and body" $ nestedLetAssignsSpec
-    it "explicates control for if within nested if in predicate"
+    it "explicates control for if term with a nested if in its predicate"
       $ nestedIfPredSpec
+    it "explicates control for let term with nested if in its binding term"
+      $ ifInLetAssign
 
 basicAddAndNegSpec =
   explicateControl inputTrm (C.Label "start") 3 `shouldBe` (expectedBlocks, 3)
@@ -58,7 +60,7 @@ nestedLetAssignsSpec =
   expectedBlocks = M.singleton (C.Label "start") expectedTail
 
 nestedIfPredSpec =
-  explicateControl inputTrm (C.Label "start") 55 `shouldBe` (expectedBlocks, 63)
+  explicateControl inputTrm (C.Label "start") 55 `shouldBe` (expectedBlocks, 59)
  where
   inputTrm = S.TermIf
     (S.TermIf
@@ -80,26 +82,22 @@ nestedIfPredSpec =
   startBlock = C.TailSeq
     (C.StmtAssign (C.Var "tmp52") C.TermRead)
     (C.TailIf (C.TermCmp C.CmpEq (C.ArgVar (C.Var "tmp52")) (C.ArgInt 1))
-              (C.Label "block61")
-              (C.Label "block62")
-    )
-  block55 = C.TailRet (C.TermAdd (C.ArgInt 10) (C.ArgInt 32))
-  block56 = C.TailRet (C.TermAdd (C.ArgInt 700) (C.ArgInt 77))
-  block57 = C.TailGoTo (C.Label "block55")
-  block58 = C.TailGoTo (C.Label "block56")
-  block59 = C.TailGoTo (C.Label "block55")
-  block60 = C.TailGoTo (C.Label "block56")
-  block61 = C.TailSeq
-    (C.StmtAssign (C.Var "tmp53") C.TermRead)
-    (C.TailIf (C.TermCmp C.CmpEq (C.ArgVar (C.Var "tmp53")) (C.ArgInt 0))
               (C.Label "block57")
               (C.Label "block58")
     )
-  block62 = C.TailSeq
+  block55 = C.TailRet (C.TermAdd (C.ArgInt 10) (C.ArgInt 32))
+  block56 = C.TailRet (C.TermAdd (C.ArgInt 700) (C.ArgInt 77))
+  block57 = C.TailSeq
+    (C.StmtAssign (C.Var "tmp53") C.TermRead)
+    (C.TailIf (C.TermCmp C.CmpEq (C.ArgVar (C.Var "tmp53")) (C.ArgInt 0))
+              (C.Label "block55")
+              (C.Label "block56")
+    )
+  block58 = C.TailSeq
     (C.StmtAssign (C.Var "tmp54") C.TermRead)
     (C.TailIf (C.TermCmp C.CmpEq (C.ArgVar (C.Var "tmp54")) (C.ArgInt 2))
-              (C.Label "block59")
-              (C.Label "block60")
+              (C.Label "block55")
+              (C.Label "block56")
     )
   expectedBlocks = M.fromList
     [ (C.Label "start"  , startBlock)
@@ -107,8 +105,33 @@ nestedIfPredSpec =
     , (C.Label "block56", block56)
     , (C.Label "block57", block57)
     , (C.Label "block58", block58)
-    , (C.Label "block59", block59)
-    , (C.Label "block60", block60)
-    , (C.Label "block61", block61)
-    , (C.Label "block62", block62)
+    ]
+
+ifInLetAssign =
+  explicateControl inputTrm (C.Label "start") 0 `shouldBe` (expectedBlocks, 3)
+ where
+  inputTrm =
+    (S.TermLet
+      (S.Var "x")
+      (S.TermIf (S.TermEq (S.TermVar (S.Var "y")) (S.TermInt 0))
+                (S.TermInt 10)
+                (S.TermInt 32)
+      )
+      (S.TermAdd (S.TermVar (S.Var "x")) (S.TermInt 100))
+    )
+  startBlock =
+    (C.TailIf (C.TermCmp C.CmpEq (C.ArgVar (C.Var "y")) (C.ArgInt 0))
+              (C.Label "block1")
+              (C.Label "block2")
+    )
+  block0 = C.TailRet (C.TermAdd (C.ArgVar (C.Var "x")) (C.ArgInt 100))
+  block1 = C.TailSeq (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgInt 10)))
+                     (C.TailGoTo (C.Label "block0"))
+  block2 = C.TailSeq (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgInt 32)))
+                     (C.TailGoTo (C.Label "block0"))
+  expectedBlocks = M.fromList
+    [ (C.Label "start" , startBlock)
+    , (C.Label "block0", block0)
+    , (C.Label "block1", block1)
+    , (C.Label "block2", block2)
     ]

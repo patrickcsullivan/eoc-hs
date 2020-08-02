@@ -109,6 +109,8 @@ explicateLetBinding binding assignTo tail = case binding of
     elsLabel <- getNextLabel
     thnTail  <- explicateTail thn assignThenGoToTail
     elsTail  <- explicateTail els assignThenGoToTail
+    insertBlock thnLabel thnTail
+    insertBlock elsLabel elsTail
     explicateIfPred pred thnLabel elsLabel
 
 {- | Explicate the predicate term of an if term.
@@ -144,35 +146,14 @@ explicateIfPred pred encThnLabel encElsLabel = case pred of
     bdyTail <- explicateTail bdy (\t -> C.TailIf t encThnLabel encElsLabel)
     explicateLetBinding bnd (C.Var name) bdyTail
   S.TermIf pred thn els -> do
-    -- This provides a layer of indirection from the inner "then" arm to the
-    -- enclosing "then" and "else" arms. I'm not sure why this is useful but it
-    -- is required to match the example on p62.
-    thnToFstLabel <- getNextLabel
-    let thnToFstTail = C.TailGoTo encThnLabel
-    thnToSndLabel <- getNextLabel
-    let thnToSndTail = C.TailGoTo encElsLabel
-    insertBlock thnToFstLabel thnToFstTail
-    insertBlock thnToSndLabel thnToSndTail
-
-    -- This provides a layer of indirection from the inner "else" arm to the
-    -- enclosing "then" and "else" arms. I'm not sure why this is useful but it
-    -- is required to match the example on p62.
-    elsToFstLabel <- getNextLabel
-    let elsToFstTail = C.TailGoTo encThnLabel
-    elsToSndLabel <- getNextLabel
-    let elsToSndTail = C.TailGoTo encElsLabel
-    insertBlock elsToFstLabel elsToFstTail
-    insertBlock elsToSndLabel elsToSndTail
-
     -- Create labeled block for each branch. Each branch will evaluate and then
     -- jump to one of the enclosing "if" term's branches.
     thnLabel <- getNextLabel
     elsLabel <- getNextLabel
-    thnTail  <- explicateTail thn (\t -> C.TailIf t thnToFstLabel thnToSndLabel)
-    elsTail  <- explicateTail els (\t -> C.TailIf t elsToFstLabel elsToSndLabel)
+    thnTail  <- explicateTail thn (\t -> C.TailIf t encThnLabel encElsLabel)
+    elsTail  <- explicateTail els (\t -> C.TailIf t encThnLabel encElsLabel)
     insertBlock thnLabel thnTail
     insertBlock elsLabel elsTail
-
     -- Return a tail will evaluate the inner "if" term's predicate and then jump
     -- to one of the inner "if" term's branches, both of which will evaluate and
     -- then jump to one of the enclosing "if" term's branches.

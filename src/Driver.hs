@@ -1,5 +1,7 @@
 module Driver where
 
+import qualified Data.Map                      as M
+import           Data.Maybe                     ( fromMaybe )
 import qualified CIR.AST                       as C
 import           CIR.SelectInstructions         ( selectInstructions )
 import           CIR.UncoverVars                ( uncoverVars )
@@ -16,9 +18,10 @@ import           PXIR.PatchInstructions         ( patchInstructions )
 drive :: R.Term -> String
 drive rTrm =
   let sTrm                   = shrink rTrm
-      (sTrm' , nextVar)      = uniquifyArgs sTrm 0
-      (sTrm'', _      )      = simplifyArgs sTrm' nextVar
-      cTail                  = explicateControl sTrm''
+      (sTrm'  , nextVar)     = uniquifyArgs sTrm 0
+      (sTrm'' , _      )     = simplifyArgs sTrm' nextVar
+      (cBlocks, _      )     = explicateControl sTrm'' (C.Label "start") 0
+      cTail = fromMaybe undefined $ M.lookup (C.Label "start") cBlocks
       localVars              = uncoverVars cTail
       pInstrs                = selectInstructions cTail
       (pInstrs', stackSpace) = assignHomes availableRegs pInstrs

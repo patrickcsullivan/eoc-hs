@@ -30,13 +30,13 @@ data Stmt
     = StmtAssign Var Term
     deriving Eq
 
-newtype Label = Label { unlabel :: String } deriving Eq
+newtype Label = Label { unlabel :: String } deriving (Eq, Ord)
 
 data Tail
     = TailSeq Stmt Tail
     | TailRet Term
     | TailGoTo Label
-    | TailIf Cmp Arg Arg Label Label
+    | TailIf Term Label Label
     deriving Eq
 
 instance Show Arg where
@@ -69,13 +69,9 @@ instance Show Tail where
   show (TailSeq stmt tail) = show stmt ++ "\n" ++ show tail
   show (TailRet  trm     ) = "return " ++ show trm ++ "\n"
   show (TailGoTo lbl     ) = "goto " ++ show lbl ++ "\n"
-  show (TailIf cmp arg1 arg2 lbl1 lbl2) =
+  show (TailIf trm lbl1 lbl2) =
     "if ("
-      ++ show cmp
-      ++ " "
-      ++ show arg1
-      ++ " "
-      ++ show arg2
+      ++ show trm
       ++ ")\n"
       ++ "  then goto "
       ++ show lbl1

@@ -31,25 +31,31 @@ callerSavedRegs =
 bidirectionalBiclique :: [a] -> [a] -> G.Graph a
 bidirectionalBiclique xs ys = G.biclique xs ys `G.overlay` G.biclique ys xs
 
-{- | Retrun a graph of conflicts for an arithmetic instruction.
+{- | Retrun a graph of conflicts between the destination variable and any
+live-after variables that aren't equal to the destination.
 -}
-arithConflicts :: Arg -> S.Set Var -> ConflictGraph
-arithConflicts (ArgVar dstVar) liveAfter =
+dstToLiveAfterConflicts :: Arg -> S.Set Var -> ConflictGraph
+dstToLiveAfterConflicts (ArgVar dstVar) liveAfter =
   let liveAfterVerts = map Left $ filter (/= dstVar) $ S.toList liveAfter
-  in  G.vertex (Left dstVar)  -- Add dst to graph regardles of it conflicts with anything.
+  -- Add dst to graph regardles of it conflicts with anything.
+  -- Connect the dst var with every live-after value that isn't the dst.
+  in  G.vertex (Left dstVar)
         `G.overlay` bidirectionalBiclique [Left dstVar] liveAfterVerts
-arithConflicts _ _ = G.empty
+dstToLiveAfterConflicts _ _ = G.empty
 
-{- | Retrun a graph of conflicts for a movq instruction.
+{- | Retrun a graph of conflicts between the destination variable and any
+live-after variables aren't equal to the source or the destination.
 -}
-movqConflicts :: Arg -> Arg -> S.Set Var -> ConflictGraph
-movqConflicts srcArg (ArgVar dstVar) liveAfter =
+dstToLiveAfterExceptSrcConflicts :: Arg -> Arg -> S.Set Var -> ConflictGraph
+dstToLiveAfterExceptSrcConflicts srcArg (ArgVar dstVar) liveAfter =
   let liveAfterVerts =
           map Left $ filter (\v -> v /= dstVar && ArgVar v /= srcArg) $ S.toList
             liveAfter
-  in  G.vertex (Left dstVar)  -- Add dst to graph regardles of it conflicts with anything.
+  -- Add dst to graph regardles of it conflicts with anything.
+  -- Connect the dst var with every live-after var that isn't the src or dst.
+  in  G.vertex (Left dstVar)
         `G.overlay` bidirectionalBiclique [Left dstVar] liveAfterVerts
-movqConflicts _ _ _ = G.empty
+dstToLiveAfterExceptSrcConflicts _ _ _ = G.empty
 
 {- | Retrun a graph of conflicts for a callq instruction.
 -}
@@ -63,12 +69,22 @@ callqConflicts liveAfter =
 -}
 instrConflicts :: (Instr, S.Set Var) -> ConflictGraph
 instrConflicts (instr, liveAfter) = case instr of
-  InstrAddQ _   dst -> arithConflicts dst liveAfter
-  InstrSubQ _   dst -> arithConflicts dst liveAfter
-  InstrMovQ src dst -> movqConflicts src dst liveAfter
-  InstrNegQ  dst    -> arithConflicts dst liveAfter
-  InstrCallQ _      -> callqConflicts liveAfter
-  _                 -> G.empty
+  InstrAddQ _ dst     -> dstToLiveAfterConflicts dst liveAfter
+  InstrSubQ _ dst     -> dstToLiveAfterConflicts dst liveAfter
+  InstrNegQ dst       -> dstToLiveAfterConflicts dst liveAfter
+  InstrXOrQ   _   dst -> dstToLiveAfterConflicts dst liveAfter
+  InstrCmpQ   _   _   -> G.empty
+  InstrMovQ   src dst -> dstToLiveAfterExceptSrcConflicts src dst liveAfter
+  -- Maybe InstrMovZBQ should use dstToLiveAfterExceptSrcConflicts if the bsrc
+  -- field is ever changed from a ByteReg to an Arg.
+  InstrMovZBQ _   dst -> dstToLiveAfterConflicts dst liveAfter
+  InstrPushQ _        -> G.empty
+  InstrPopQ  dst      -> dstToLiveAfterConflicts dst liveAfter
+  InstrCallQ _        -> callqConflicts liveAfter
+  InstrRetQ           -> G.empty
+  InstrJmp _          -> G.empty
+  InstrJmpIf _ _      -> G.empty
+  InstrLabel _        -> G.empty
 
 {- | Build a conflict graph for the instructions.
 -}

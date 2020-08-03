@@ -53,16 +53,16 @@ newtype Label = Label { unlabel :: String } deriving (Eq, Ord)
 data Instr
     = InstrAddQ { src :: Arg, dst :: Arg }
     | InstrSubQ { src :: Arg, dst :: Arg }
+    | InstrNegQ Arg
+    | InstrXOrQ { src :: Arg, dst :: Arg }
+    | InstrCmpQ { src2 :: Arg, src1 :: Arg }
     | InstrMovQ { src :: Arg, dst :: Arg }
     | InstrMovZBQ { bsrc :: ByteReg, dst :: Arg }
-    | InstrNegQ Arg
+    | InstrSet { cc :: CC, bdst :: ByteReg }
     | InstrPushQ Arg
     | InstrPopQ Arg
     | InstrCallQ Label
     | InstrRetQ
-    | InstrXOrQ { src :: Arg, dst :: Arg }
-    | InstrCmpQ { src2 :: Arg, src1 :: Arg }
-    | InstrSet { cc :: CC, bdst :: ByteReg }
     | InstrJmp Label
     | InstrJmpIf CC Label
     | InstrLabel Label

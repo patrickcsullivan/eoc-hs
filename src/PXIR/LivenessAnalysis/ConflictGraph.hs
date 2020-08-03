@@ -31,7 +31,7 @@ callerSavedRegs =
 bidirectionalBiclique :: [a] -> [a] -> G.Graph a
 bidirectionalBiclique xs ys = G.biclique xs ys `G.overlay` G.biclique ys xs
 
-{- | Retrun a graph of conflicts between the destination variable and any
+{- | Return a graph of conflicts between the destination variable and any
 live-after variables that aren't equal to the destination.
 -}
 dstToLiveAfterConflicts :: Arg -> S.Set Var -> ConflictGraph
@@ -43,7 +43,7 @@ dstToLiveAfterConflicts (ArgVar dstVar) liveAfter =
         `G.overlay` bidirectionalBiclique [Left dstVar] liveAfterVerts
 dstToLiveAfterConflicts _ _ = G.empty
 
-{- | Retrun a graph of conflicts between the destination variable and any
+{- | Return a graph of conflicts between the destination variable and any
 live-after variables aren't equal to the source or the destination.
 -}
 dstToLiveAfterExceptSrcConflicts :: Arg -> Arg -> S.Set Var -> ConflictGraph
@@ -57,7 +57,7 @@ dstToLiveAfterExceptSrcConflicts srcArg (ArgVar dstVar) liveAfter =
         `G.overlay` bidirectionalBiclique [Left dstVar] liveAfterVerts
 dstToLiveAfterExceptSrcConflicts _ _ _ = G.empty
 
-{- | Retrun a graph of conflicts for a callq instruction.
+{- | Return a graph of conflicts for a callq instruction.
 -}
 callqConflicts :: S.Set Var -> ConflictGraph
 callqConflicts liveAfter =
@@ -65,7 +65,7 @@ callqConflicts liveAfter =
       liveAfterVerts      = map Left $ S.toList liveAfter
   in  bidirectionalBiclique callerSavedRegVerts liveAfterVerts
 
-{- | Retrun a graph of conflicts for an instruction.
+{- | Return a graph of conflicts for an instruction.
 -}
 instrConflicts :: (Instr, S.Set Var) -> ConflictGraph
 instrConflicts (instr, liveAfter) = case instr of

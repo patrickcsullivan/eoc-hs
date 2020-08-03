@@ -12,14 +12,14 @@ import           PXIR.LivenessAnalysis.ColorGraph
 import qualified PXIR.LivenessAnalysis.ConflictGraph
                                                as CG
 import           PXIR.LivenessAnalysis.UncoverLive
-                                                ( liveAfterEach )
+                                                ( liveAfter )
 
 {- | Assign a color, represented by a natural number, to each variable so that
 no variables that are live at the same time have the same color. Try to not use
 more colors than necessary.
 -}
-assignColors :: [Instr] -> M.Map Var Int
-assignColors = colorGraph . CG.make . liveAfterEach
+assignColors :: Label -> M.Map Label [Instr] -> M.Map Var Int
+assignColors start blocks = colorGraph $ CG.make $ liveAfter start blocks
 
 {- | Map each color, represented by a natural number, to an argument. Starting
 from color number zero and working upwards, first assign colors to unique
@@ -84,12 +84,13 @@ stackSpace varToArg =
             $ M.elems varToArg
   in  if null offsets then 0 else (-1) * minimum offsets
 
-{- | Replace each variable argument in the block with a register or a
+{- | Replace each variable argument in each instruction with a register or a
 dereference to a memory location on the stack. Return the space needed to store
 variables on the stack in bytes
 -}
-assignHomes :: [Reg] -> [Instr] -> ([Instr], Int)
-assignHomes availRegs instrs =
-  let varToArg = mapColorToArg availRegs $ assignColors instrs
-      instrs'  = map (replaceVarsInInstr varToArg) instrs
-  in  (instrs', stackSpace varToArg)
+assignHomes
+  :: Label -> [Reg] -> M.Map Label [Instr] -> (M.Map Label [Instr], Int)
+assignHomes start availRegs blocks =
+  let varToArg = mapColorToArg availRegs $ assignColors start blocks
+      blocks'  = M.map (map (replaceVarsInInstr varToArg)) blocks
+  in  (blocks', stackSpace varToArg)

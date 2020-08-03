@@ -7,6 +7,7 @@ module PXIR.LivenessAnalysis.ConflictGraph
 where
 
 import qualified Algebra.Graph                 as G
+import qualified Data.Map                      as M
 import qualified Data.Set                      as S
 import           PXIR.AST
 
@@ -88,7 +89,8 @@ instrConflicts (instr, liveAfter) = case instr of
 
 {- | Build a conflict graph for the instructions.
 -}
-make :: [(Instr, S.Set Var)] -> ConflictGraph
-make = foldl
+make :: M.Map Label [(Instr, S.Set Var)] -> ConflictGraph
+make labelToInstrLiveness = foldl
   (\gAccum instrLiveAfter -> G.overlay gAccum $ instrConflicts instrLiveAfter)
   G.empty
+  (concat $ M.elems labelToInstrLiveness)

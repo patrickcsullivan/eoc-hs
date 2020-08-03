@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 382cf24302685759f6ab07a46f3fddfd75020d4a0786904040cd2ba656d22e87
+-- hash: 4f16b06291743b59d9d88a95a9c0b6b138f97f54fede4cd770bed76f4d74360e
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
       PXIR.AST
       PXIR.LivenessAnalysis.ColorGraph
       PXIR.LivenessAnalysis.ConflictGraph
+      PXIR.LivenessAnalysis.ControlFlowGraph
       PXIR.LivenessAnalysis.UncoverLive
       PXIR.PatchInstructions
       RIR.AST

@@ -17,19 +17,22 @@ import           PXIR.PatchInstructions         ( patchInstructions )
 
 drive :: R.Term -> String
 drive rTrm =
-  let sTrm                   = shrink rTrm
-      (sTrm'  , nextVar)     = uniquifyArgs sTrm 0
-      (sTrm'' , _      )     = simplifyArgs sTrm' nextVar
-      (cBlocks, _      )     = explicateControl sTrm'' (C.Label "start") 0
-      pBlocks                = selectInstructions cBlocks
-      pInstrs = fromMaybe undefined $ M.lookup (P.Label "start") pBlocks --temporary
-      (pInstrs', stackSpace) = assignHomes availableRegs pInstrs
-      pInstrs''              = patchInstructions pInstrs'
-      pBlock                 = P.Block (P.Label "start") pInstrs''
-      stackSpace'            = adjustStackSpace stackSpace
-      main                   = mainBlock stackSpace' (P.Label "start")
-      conclusion             = conclusionBlock stackSpace'
-  in  writeBlocks main conclusion pBlock
+  let
+    sTrm               = shrink rTrm
+    (sTrm'  , nextVar) = uniquifyArgs sTrm 0
+    (sTrm'' , _      ) = simplifyArgs sTrm' nextVar
+    (cBlocks, _      ) = explicateControl sTrm'' (C.Label "start") 0
+    pBlocks            = selectInstructions cBlocks
+    (pBlocks', stackSpace) =
+      assignHomes (P.Label "start") availableRegs pBlocks
+    pInstrs     = fromMaybe undefined $ M.lookup (P.Label "start") pBlocks' --temporary
+    pInstrs'    = patchInstructions pInstrs
+    pBlock      = P.Block (P.Label "start") pInstrs'
+    stackSpace' = adjustStackSpace stackSpace
+    main        = mainBlock stackSpace' (P.Label "start")
+    conclusion  = conclusionBlock stackSpace'
+  in
+    writeBlocks main conclusion pBlock
 
 availableRegs :: [P.Reg]
 availableRegs =

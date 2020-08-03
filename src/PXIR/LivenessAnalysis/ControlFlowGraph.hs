@@ -1,6 +1,7 @@
 module PXIR.LivenessAnalysis.ControlFlowGraph
   ( ControlFlowGraph
   , make
+  , topoSort
   )
 where
 
@@ -26,9 +27,43 @@ blockFlow :: Label -> [Instr] -> ControlFlowGraph
 blockFlow label instrs =
   let succs = mapMaybe succBlock instrs in G.star label succs
 
-{- | Build a conflict graph for the instructions.
+{- | Build a control graph for the instructions.
 -}
 make :: [(Label, [Instr])] -> ControlFlowGraph
 make = foldl
   (\gAccum (label, instrs) -> G.overlay gAccum $ blockFlow label instrs)
   G.empty
+
+{- | Topologically sort the control flow graph starting with the given label.
+-}
+topoSort :: Label -> ControlFlowGraph -> [Label]
+topoSort start cfg = topoSortK [] [start] cfg
+
+topoSortK :: [Label] -> [Label] -> ControlFlowGraph -> [Label]
+topoSortK revSorted noIncoming cfg = case noIncoming of
+  [] | G.edgeCount cfg > 0 ->
+    error "failed to tologically sort control flow graph"
+  [] -> reverse revSorted
+  (v : vs) ->
+    let
+      revSorted' = v : revSorted
+      -- For each edge e from v to m...
+      outgoing   = filter (\(src, _) -> src == v) $ G.edgeList cfg
+      -- Remove e from the graph...
+      cfg'       = removeEdges outgoing cfg
+      -- If m has no remaining incoming edges, insert it into the list of
+      -- vertices with no incoming edges.
+      dsts       = map snd outgoing
+      dstsWithNoIncoming =
+        filter (\dst -> not $ hasIncomingEdges cfg' dst) dsts
+      -- And be sure to remove the head from the list of incoming edges.
+      noIncoming' = vs ++ dstsWithNoIncoming
+    in
+      topoSortK revSorted' noIncoming' cfg'
+
+removeEdges :: Eq a => [(a, a)] -> G.Graph a -> G.Graph a
+removeEdges es g = foldl (\accum (src, dst) -> G.removeEdge src dst accum) g es
+
+hasIncomingEdges :: (Eq a, Ord a) => G.Graph a -> a -> Bool
+hasIncomingEdges g v = length incoming == 0
+  where incoming = filter (\(_, dst) -> dst == v) $ G.edgeList g

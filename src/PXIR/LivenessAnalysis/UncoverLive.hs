@@ -3,12 +3,28 @@ module PXIR.LivenessAnalysis.UncoverLive
   )
 where
 
+import           Control.Monad.State
 import qualified Data.Map                      as M
-import           Data.Maybe                     ( mapMaybe )
+import           Data.Maybe                     ( fromMaybe
+                                                , mapMaybe
+                                                )
 import qualified Data.Set                      as S
 import           PXIR.AST
-import           PXIR.LivenessAnalysis.ControlFlowGraph
-                                                ( ControlFlowGraph )
+import qualified PXIR.LivenessAnalysis.ControlFlowGraph
+                                               as CFG
+
+{- | Liveness analysis of a block of instructions.
+-}
+data BlockLiveness = BlockLiveness
+    {- | Variables that are live before the first instruction of the block.
+    -}
+    { liveBefore :: !(S.Set Var)
+
+    {- | List containing each instruction and the variables that are live after 
+    it.
+    -}
+    , liveAfterInstrs :: !([(Instr, S.Set Var)])
+    }
 
 {- | Return the variable in the argument if the argument contains a variable.
 -}
@@ -50,12 +66,11 @@ varsWritten instr = S.fromList $ mapMaybe argFromVar argsWritten
 
 {- | Get the set of variables that are live before the instruction.
 -}
-liveBefore :: Instr -> S.Set Var -> S.Set Var
-liveBefore instr liveAfter =
+liveBeforeInstr :: Instr -> S.Set Var -> S.Set Var
+liveBeforeInstr instr liveAfter =
   (liveAfter `S.difference` varsWritten instr) `S.union` varsRead instr
 
-{- | Get the set of variables that are live after an instruction for each
-instruction in the block.
+{- | Get the sets of variables that are live after each instruction in a block.
 -}
 liveAfterEachInBlock :: S.Set Var -> [Instr] -> [(Instr, S.Set Var)]
 liveAfterEachInBlock liveAfterBlock instrs = foldl f [] $ reverse instrs
@@ -69,13 +84,71 @@ liveAfterEachInBlock liveAfterBlock instrs = foldl f [] $ reverse instrs
     -- n+1. The live-before vars for instruction n+1 will be the
     -- live-after vars for instruction n.
     (succInstr, succLiveAfter) : tail ->
-      let succLiveBefore = liveBefore succInstr succLiveAfter
+      let succLiveBefore = liveBeforeInstr succInstr succLiveAfter
       in  (instr, succLiveBefore) : (succInstr, succLiveAfter) : tail
 
-
-{- | Get the set of variables that are live after an instruction for each
-instruction in the block.
+{- | Get the sets of variables that are live before the block and live after
+each instruction in the block.
 -}
-liveAfter
-  :: ControlFlowGraph -> M.Map Label [Instr] -> M.Map Label [(Instr, S.Set Var)]
-liveAfter cfg blocks = undefined
+blockLiveness :: S.Set Var -> [Instr] -> BlockLiveness
+blockLiveness liveAfterBlock instrs =
+  let liveAfterInstrs = liveAfterEachInBlock liveAfterBlock instrs
+      liveBeforeBlock = case liveAfterInstrs of
+        []                             -> liveAfterBlock
+        ((fstInstr, liveAfterFst) : _) -> liveBeforeInstr fstInstr liveAfterFst
+  in  BlockLiveness liveBeforeBlock liveAfterInstrs
+
+
+{- | Context that maintains the state necessary performing liveness analysis on
+blocks in reverse topological order.
+-}
+data LivenessCtx = LivenessCtx
+    {- | The remaining blocks on which to perform liveness analysis, sorted in
+    reverse topological order. 
+    -}
+    { remaining :: ![(Label, [Instr])]
+
+    {- | Blocks on which liveness analysis has been performed. These happen to
+    be in topological order, but that is not intentional or importnat since
+    these will be inserted back into a map.
+    -}
+    , complete :: ![(Label, BlockLiveness)]
+    }
+
+{- | State monad that wraps the liveness context.
+-}
+type LivenessCtxS a = State LivenessCtx a
+
+{- | Peform liveness analysis on remaining blocks.
+-}
+liveAfterS :: LivenessCtxS (M.Map Label BlockLiveness)
+liveAfterS = do
+  (LivenessCtx rem comp) <- get
+  case rem of
+    []                           -> return $ M.fromList comp
+    ((nxtLbl, nxtInstrs) : rem') -> do
+      -- Conservatively assume that the set of live-after vars for the next
+      -- block is the union of live-before var sets for all blocks that are
+      -- topological successors to the next block in the control flow graph.
+      let liveAfterBlock = S.unions
+            $ map (\(_, (BlockLiveness liveBefore _)) -> liveBefore) comp
+      let liveness = blockLiveness liveAfterBlock nxtInstrs
+      put $ LivenessCtx rem' ((nxtLbl, liveness) : comp)
+      liveAfterS
+
+{- | Return the variables that are live after each instruction in each block.
+-}
+liveAfter :: Label -> M.Map Label [Instr] -> (M.Map Label [(Instr, S.Set Var)])
+liveAfter start blocks =
+  let topoSortedLabels = CFG.topoSort start $ CFG.make $ M.toList blocks
+      topoSortedLabelsAndBlocks = map
+        (\lbl -> case M.lookup lbl blocks of
+          Just instrs -> (lbl, instrs)
+          Nothing     -> error "sorted blocks contains nonexistent label"
+        )
+        topoSortedLabels
+      ctx = LivenessCtx (reverse topoSortedLabelsAndBlocks) []
+      (labelToBlockLiveness, _) = runState liveAfterS ctx
+  in  M.map (\(BlockLiveness _ lifeAfterInstrs) -> lifeAfterInstrs)
+            labelToBlockLiveness
+

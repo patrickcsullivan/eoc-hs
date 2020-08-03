@@ -57,7 +57,7 @@ data Instr
     | InstrRetQ
     | InstrXOrQ { src :: Arg, dst :: Arg }
     | InstrCmpQ { src2 :: Arg, src1 :: Arg }
-    | InstrSet
+    | InstrSet CC Arg
     | InstrMovZBQ { src :: Arg, dst :: Arg }
     | InstrJmp Label
     | InstrJmpIf CC Label
@@ -113,9 +113,9 @@ instance Show Instr where
     (InstrPopQ  dst   )     -> "popq " ++ show dst
     (InstrCallQ label )     -> "callq " ++ show label
     InstrRetQ               -> "retq"
-    (InstrXOrQ src  dst )   -> "xorq " ++ show src ++ ", " ++ show dst
-    (InstrCmpQ src2 src1)   -> "cmpq " ++ show src2 ++ ", " ++ show src1
-    InstrSet                -> error "show for InstrSet is unhandled" -- FIXME
+    (InstrXOrQ src  dst   ) -> "xorq " ++ show src ++ ", " ++ show dst
+    (InstrCmpQ src2 src1  ) -> "cmpq " ++ show src2 ++ ", " ++ show src1
+    (InstrSet  cc   dst   ) -> error "show for InstrSet is unhandled" -- FIXME
     (InstrJmp label       ) -> "jmp " ++ show label
     (InstrJmpIf CCE  label) -> "je" ++ show label
     (InstrJmpIf CCL  label) -> "jl" ++ show label

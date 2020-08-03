@@ -29,6 +29,8 @@ spec = do
       $ notInPlaceSpec
     it "converts a CIR compare == example to PXIR" $ cmpEqSpec
     it "converts a CIR compare < example to PXIR" $ cmpLTSpec
+    it "converts a CIR example with if and goto control flow to PXIR"
+      $ ifAndGoToSpec
 
 readSpec = selectInstructions input `shouldBe` expected
  where
@@ -270,4 +272,50 @@ cmpLTSpec = selectInstructions input `shouldBe` expected
     , P.InstrMovZBQ P.ByteRegAL (P.ArgVar (P.Var "y"))
     , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
     , P.InstrJmp (P.Label "conclusion")
+    ]
+
+ifAndGoToSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf (C.TermCmp C.CmpEq (C.ArgVar (C.Var "y")) (C.ArgInt 0))
+                  (C.Label "block1")
+                  (C.Label "block2")
+        )
+      )
+    , ( C.Label "block0"
+      , C.TailRet (C.TermAdd (C.ArgVar (C.Var "x")) (C.ArgInt 100))
+      )
+    , ( C.Label "block1"
+      , C.TailSeq (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgInt 10)))
+                  (C.TailGoTo (C.Label "block0"))
+      )
+    , ( C.Label "block2"
+      , C.TailSeq (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgInt 32)))
+                  (C.TailGoTo (C.Label "block0"))
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrCmpQ (P.ArgInt 0) (P.ArgVar (P.Var "y"))
+        , P.InstrJmpIf P.CCE (P.Label "block1")
+        , P.InstrJmp (P.Label "block2")
+        ]
+      )
+    , ( P.Label "block0"
+      , [ P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+        , P.InstrAddQ (P.ArgInt 100) (P.ArgReg P.RegRAX)
+        , P.InstrJmp (P.Label "conclusion")
+        ]
+      )
+    , ( P.Label "block1"
+      , [ P.InstrMovQ (P.ArgInt 10) (P.ArgVar (P.Var "x"))
+        , P.InstrJmp (P.Label "block0")
+        ]
+      )
+    , ( P.Label "block2"
+      , [ P.InstrMovQ (P.ArgInt 32) (P.ArgVar (P.Var "x"))
+        , P.InstrJmp (P.Label "block0")
+        ]
+      )
     ]

@@ -6,6 +6,10 @@ module PXIR.AST where
 
 import qualified Data.Map                      as M
 
+data ByteReg
+    = ByteRegAL
+    deriving Eq
+
 data Reg
     = RegRSP
     | RegRBP
@@ -50,6 +54,7 @@ data Instr
     = InstrAddQ { src :: Arg, dst :: Arg }
     | InstrSubQ { src :: Arg, dst :: Arg }
     | InstrMovQ { src :: Arg, dst :: Arg }
+    | InstrMovZBQ { bsrc :: ByteReg, dst :: Arg }
     | InstrNegQ Arg
     | InstrPushQ Arg
     | InstrPopQ Arg
@@ -57,8 +62,7 @@ data Instr
     | InstrRetQ
     | InstrXOrQ { src :: Arg, dst :: Arg }
     | InstrCmpQ { src2 :: Arg, src1 :: Arg }
-    | InstrSet CC Arg
-    | InstrMovZBQ { src :: Arg, dst :: Arg }
+    | InstrSet { cc :: CC, bdst :: ByteReg }
     | InstrJmp Label
     | InstrJmpIf CC Label
     | InstrLabel Label
@@ -70,6 +74,10 @@ data Block = Block
     } deriving Eq
 
 data Program = Program { programBlocks :: M.Map Label Block } deriving Eq
+
+instance Show ByteReg where
+  show breg = case breg of
+    ByteRegAL -> "al"
 
 instance Show Reg where
   show reg = case reg of
@@ -105,17 +113,23 @@ instance Show Label where
 
 instance Show Instr where
   show instr = case instr of
-    (InstrAddQ src dst)     -> "addq " ++ show src ++ ", " ++ show dst
-    (InstrSubQ src dst)     -> "subq " ++ show src ++ ", " ++ show dst
-    (InstrMovQ src dst)     -> "movq " ++ show src ++ ", " ++ show dst
-    (InstrNegQ  dst   )     -> "negq " ++ show dst
-    (InstrPushQ src   )     -> "pushq " ++ show src
-    (InstrPopQ  dst   )     -> "popq " ++ show dst
-    (InstrCallQ label )     -> "callq " ++ show label
+    (InstrAddQ src dst) -> "addq " ++ show src ++ ", " ++ show dst
+    (InstrSubQ src dst) -> "subq " ++ show src ++ ", " ++ show dst
+    (InstrMovQ src dst) -> "movq " ++ show src ++ ", " ++ show dst
+    (InstrMovZBQ bsrc dst) ->
+      "movzbq" ++ "(%" ++ show bsrc ++ "), " ++ show dst
+    (InstrNegQ  dst  )      -> "negq " ++ show dst
+    (InstrPushQ src  )      -> "pushq " ++ show src
+    (InstrPopQ  dst  )      -> "popq " ++ show dst
+    (InstrCallQ label)      -> "callq " ++ show label
     InstrRetQ               -> "retq"
     (InstrXOrQ src  dst   ) -> "xorq " ++ show src ++ ", " ++ show dst
     (InstrCmpQ src2 src1  ) -> "cmpq " ++ show src2 ++ ", " ++ show src1
-    (InstrSet  cc   dst   ) -> error "show for InstrSet is unhandled" -- FIXME
+    (InstrSet  CCE  dst   ) -> "sete" ++ show dst
+    (InstrSet  CCL  dst   ) -> "setl" ++ show dst
+    (InstrSet  CCLE dst   ) -> "setle" ++ show dst
+    (InstrSet  CCG  dst   ) -> "setg" ++ show dst
+    (InstrSet  CCGE dst   ) -> "setge" ++ show dst
     (InstrJmp label       ) -> "jmp " ++ show label
     (InstrJmpIf CCE  label) -> "je" ++ show label
     (InstrJmpIf CCL  label) -> "jl" ++ show label

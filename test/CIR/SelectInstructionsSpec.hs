@@ -24,6 +24,11 @@ spec = do
     it "converts a CIR neg example to PXIR" $ negSpec
     it "converts a CIR neg example where the arg matches the dst to PXIR"
       $ negInPlaceSpec
+    it "converts a CIR not example to PXIR" $ notSpec
+    it "converts a CIR not example where the arg matches the dst to PXIR"
+      $ notInPlaceSpec
+    it "converts a CIR compare == example to PXIR" $ cmpEqSpec
+    it "converts a CIR compare < example to PXIR" $ cmpLTSpec
 
 readSpec = selectInstructions input `shouldBe` expected
  where
@@ -181,5 +186,88 @@ negInPlaceSpec = selectInstructions input `shouldBe` expected
     [ P.InstrMovQ (P.ArgInt 20) (P.ArgVar (P.Var "x"))
     , P.InstrNegQ (P.ArgVar (P.Var "x"))
     , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
+    ]
+
+notSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.singleton
+    (C.Label "start")
+    (C.TailSeq
+      (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgBool False)))
+      (C.TailSeq (C.StmtAssign (C.Var "y") (C.TermNot (C.ArgVar (C.Var "x"))))
+                 (C.TailRet (C.TermArg (C.ArgVar (C.Var "y"))))
+      )
+    )
+  expected = M.singleton
+    (P.Label "start")
+    [ P.InstrMovQ (P.ArgInt 0) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgVar (P.Var "y"))
+    , P.InstrXOrQ (P.ArgInt 1) (P.ArgVar (P.Var "y"))
+    , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
+    ]
+
+notInPlaceSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.singleton
+    (C.Label "start")
+    (C.TailSeq
+      (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgBool False)))
+      (C.TailSeq (C.StmtAssign (C.Var "x") (C.TermNot (C.ArgVar (C.Var "x"))))
+                 (C.TailRet (C.TermArg (C.ArgVar (C.Var "x"))))
+      )
+    )
+  expected = M.singleton
+    (P.Label "start")
+    [ P.InstrMovQ (P.ArgInt 0) (P.ArgVar (P.Var "x"))
+    , P.InstrXOrQ (P.ArgInt 1) (P.ArgVar (P.Var "x"))
+    , P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
+    ]
+
+cmpEqSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.singleton
+    (C.Label "start")
+    (C.TailSeq
+      (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgInt 10)))
+      (C.TailSeq
+        (C.StmtAssign (C.Var "y")
+                      (C.TermCmp C.CmpEq (C.ArgInt 10) (C.ArgVar (C.Var "x")))
+        )
+        (C.TailRet (C.TermArg (C.ArgVar (C.Var "y"))))
+      )
+    )
+  expected = M.singleton
+    (P.Label "start")
+    [ P.InstrMovQ (P.ArgInt 10) (P.ArgVar (P.Var "x"))
+    , P.InstrCmpQ (P.ArgVar (P.Var "x")) (P.ArgInt 10)
+    , P.InstrSet P.CCE P.ByteRegAL
+    , P.InstrMovZBQ P.ByteRegAL (P.ArgVar (P.Var "y"))
+    , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
+    , P.InstrJmp (P.Label "conclusion")
+    ]
+
+cmpLTSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.singleton
+    (C.Label "start")
+    (C.TailSeq
+      (C.StmtAssign (C.Var "x") (C.TermArg (C.ArgInt 10)))
+      (C.TailSeq
+        (C.StmtAssign (C.Var "y")
+                      (C.TermCmp C.CmpLT (C.ArgInt 10) (C.ArgVar (C.Var "x")))
+        )
+        (C.TailRet (C.TermArg (C.ArgVar (C.Var "y"))))
+      )
+    )
+  expected = M.singleton
+    (P.Label "start")
+    [ P.InstrMovQ (P.ArgInt 10) (P.ArgVar (P.Var "x"))
+    , P.InstrCmpQ (P.ArgVar (P.Var "x")) (P.ArgInt 10)
+    , P.InstrSet P.CCL P.ByteRegAL
+    , P.InstrMovZBQ P.ByteRegAL (P.ArgVar (P.Var "y"))
+    , P.InstrMovQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
     , P.InstrJmp (P.Label "conclusion")
     ]

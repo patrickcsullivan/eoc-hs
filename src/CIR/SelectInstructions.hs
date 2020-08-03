@@ -49,7 +49,7 @@ result of the comparison to the destination.
 -}
 assignCmpInstrs :: P.CC -> P.Arg -> P.Arg -> P.Arg -> [P.Instr]
 assignCmpInstrs cc a1 a2 dst =
-  [P.InstrCmpQ a2 a1, P.InstrSet P.CCE a1, P.InstrMovQ a1 dst]
+  [P.InstrCmpQ a2 a1, P.InstrSet cc P.ByteRegAL, P.InstrMovZBQ P.ByteRegAL dst]
 
 {- | Create PXIR instructions that evaluate the given term and assign the result
 to the destination.

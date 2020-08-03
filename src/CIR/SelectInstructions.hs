@@ -106,40 +106,25 @@ cIfToP thnLbl elsLbl pred = case pred of
     , P.InstrJmpIf (cCmpToP cmp) thnLbl
     , P.InstrJmp elsLbl
     ]
-  -- EoC seems to assume that the predicate will only ever be a term, but
-  -- primitive values, variables, and the not operator are all reasonable
-  -- possibilities too. Non Boolean terms should not pass type-checking, but we
-  -- will still let the predicate handle integer terms by treating non-zero
-  -- values as true.
-  (C.TermArg a1) ->
-    [ P.InstrCmpQ (P.ArgInt 0) (cArgToP a1) -- The arg might not type-check.
-    , P.InstrJmpIf P.CCE elsLbl
-    , P.InstrJmp thnLbl
-    ]
-  (C.TermNot a1) ->
-    [ P.InstrCmpQ (P.ArgInt 0) (cArgToP a1)
-    , P.InstrJmpIf P.CCE thnLbl
-    , P.InstrJmp elsLbl
-    ]
-  -- None of the following terms should type-check, but handle them anyways.
+  -- EoC assumes that the predicate will only ever be a comparison term, but in
+  -- my implementation all terms are possible. Non Boolean terms should not pass
+  -- type-checking, but we will still let the predicate handle integer terms by
+  -- treating non-zero values as true.
+  (C.TermArg a1) -> ifZeroInstrs (cArgToP a1) elsLbl thnLbl
+  (C.TermNot a1) -> ifZeroInstrs (cArgToP a1) thnLbl elsLbl
   C.TermRead ->
     assignReadInstrs (P.ArgReg P.RegRAX)
-      ++ [ P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
-         , P.InstrJmpIf P.CCE elsLbl
-         , P.InstrJmp thnLbl
-         ]
+      ++ ifZeroInstrs (P.ArgReg P.RegRAX) elsLbl thnLbl
   (C.TermNeg a1) ->
     assignNegInstrs (cArgToP a1) (P.ArgReg P.RegRAX)
-      ++ [ P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
-         , P.InstrJmpIf P.CCE elsLbl
-         , P.InstrJmp thnLbl
-         ]
+      ++ ifZeroInstrs (P.ArgReg P.RegRAX) elsLbl thnLbl
   (C.TermAdd a1 a2) ->
     assignAddInstrs (cArgToP a1) (cArgToP a2) (P.ArgReg P.RegRAX)
-      ++ [ P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
-         , P.InstrJmpIf P.CCE elsLbl
-         , P.InstrJmp thnLbl
-         ]
+      ++ ifZeroInstrs (P.ArgReg P.RegRAX) elsLbl thnLbl
+ where
+  ifZeroInstrs :: P.Arg -> P.Label -> P.Label -> [P.Instr]
+  ifZeroInstrs arg thn els =
+    [P.InstrCmpQ (P.ArgInt 0) arg, P.InstrJmpIf P.CCE thn, P.InstrJmp els]
 
 {- | Convert the CIR tail into PXIR instructions that returns by jumping to the
 given label.

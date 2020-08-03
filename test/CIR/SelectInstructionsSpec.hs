@@ -31,6 +31,13 @@ spec = do
     it "converts a CIR compare < example to PXIR" $ cmpLTSpec
     it "converts a CIR example with if and goto control flow to PXIR"
       $ ifAndGoToSpec
+    it "converts a CIR if example with comparision predicate to PXIR"
+      $ ifCmpPredSpec
+    it "converts a CIR if example with arg predicate to PXIR" $ ifArgPredSpec
+    it "converts a CIR if example with not predicate to PXIR" $ ifNotPredSpec
+    it "converts a CIR if example with read predicate to PXIR" $ ifReadPredSpec
+    it "converts a CIR if example with neg predicate to PXIR" $ ifNegPredSpec
+    it "converts a CIR if example with add predicate to PXIR" $ ifAddPredSpec
 
 readSpec = selectInstructions input `shouldBe` expected
  where
@@ -316,6 +323,124 @@ ifAndGoToSpec = selectInstructions input `shouldBe` expected
     , ( P.Label "block2"
       , [ P.InstrMovQ (P.ArgInt 32) (P.ArgVar (P.Var "x"))
         , P.InstrJmp (P.Label "block0")
+        ]
+      )
+    ]
+
+ifCmpPredSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf
+          (C.TermCmp C.CmpLT (C.ArgVar (C.Var "x")) (C.ArgVar (C.Var "y")))
+          (C.Label "block1")
+          (C.Label "block2")
+        )
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrCmpQ (P.ArgVar (P.Var "y")) (P.ArgVar (P.Var "x"))
+        , P.InstrJmpIf P.CCL (P.Label "block1")
+        , P.InstrJmp (P.Label "block2")
+        ]
+      )
+    ]
+
+ifArgPredSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf (C.TermArg (C.ArgVar (C.Var "x")))
+                  (C.Label "block1")
+                  (C.Label "block2")
+        )
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrCmpQ (P.ArgInt 0) (P.ArgVar (P.Var "x"))
+        , P.InstrJmpIf P.CCE (P.Label "block2")
+        , P.InstrJmp (P.Label "block1")
+        ]
+      )
+    ]
+
+ifNotPredSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf (C.TermNot (C.ArgVar (C.Var "x")))
+                  (C.Label "block1")
+                  (C.Label "block2")
+        )
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrCmpQ (P.ArgInt 0) (P.ArgVar (P.Var "x"))
+        , P.InstrJmpIf P.CCE (P.Label "block1")
+        , P.InstrJmp (P.Label "block2")
+        ]
+      )
+    ]
+
+ifReadPredSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf (C.TermRead) (C.Label "block1") (C.Label "block2"))
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrCallQ (P.Label "read_int")
+        , P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
+        , P.InstrJmpIf P.CCE (P.Label "block2")
+        , P.InstrJmp (P.Label "block1")
+        ]
+      )
+    ]
+
+ifNegPredSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf (C.TermNeg (C.ArgVar (C.Var "x")))
+                  (C.Label "block1")
+                  (C.Label "block2")
+        )
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+        , P.InstrNegQ (P.ArgReg P.RegRAX)
+        , P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
+        , P.InstrJmpIf P.CCE (P.Label "block2")
+        , P.InstrJmp (P.Label "block1")
+        ]
+      )
+    ]
+
+
+ifAddPredSpec = selectInstructions input `shouldBe` expected
+ where
+  input = M.fromList
+    [ ( C.Label "start"
+      , (C.TailIf (C.TermAdd (C.ArgVar (C.Var "x")) (C.ArgVar (C.Var "y")))
+                  (C.Label "block1")
+                  (C.Label "block2")
+        )
+      )
+    ]
+  expected = M.fromList
+    [ ( P.Label "start"
+      , [ P.InstrMovQ (P.ArgVar (P.Var "x")) (P.ArgReg P.RegRAX)
+        , P.InstrAddQ (P.ArgVar (P.Var "y")) (P.ArgReg P.RegRAX)
+        , P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
+        , P.InstrJmpIf P.CCE (P.Label "block2")
+        , P.InstrJmp (P.Label "block1")
         ]
       )
     ]

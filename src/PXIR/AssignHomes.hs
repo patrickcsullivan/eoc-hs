@@ -64,12 +64,30 @@ replaceVarsInInstr varToArg instr = case instr of
     let src' = replaceVarInArg varToArg src
         dst' = replaceVarInArg varToArg dst
     in  InstrSubQ src' dst'
+  (InstrNegQ dst) -> let dst' = replaceVarInArg varToArg dst in InstrNegQ dst'
+  (InstrXOrQ src dst) ->
+    let src' = replaceVarInArg varToArg src
+        dst' = replaceVarInArg varToArg dst
+    in  InstrXOrQ src' dst'
+  (InstrCmpQ src2 src1) ->
+    let src2' = replaceVarInArg varToArg src2
+        src1' = replaceVarInArg varToArg src1
+    in  InstrCmpQ src2' src1'
   (InstrMovQ src dst) ->
     let src' = replaceVarInArg varToArg src
         dst' = replaceVarInArg varToArg dst
     in  InstrMovQ src' dst'
-  (InstrNegQ dst) -> let dst' = replaceVarInArg varToArg dst in InstrNegQ dst'
-  _               -> instr
+  (InstrMovZBQ bsrc dst) ->
+    let dst' = replaceVarInArg varToArg dst in InstrMovZBQ bsrc dst'
+  (InstrSet _ _) -> instr
+  (InstrPushQ src) ->
+    let src' = replaceVarInArg varToArg src in InstrPushQ src'
+  (InstrPopQ  dst) -> let dst' = replaceVarInArg varToArg dst in InstrPopQ dst'
+  (InstrCallQ _  ) -> instr
+  InstrRetQ        -> instr
+  (InstrJmp _    ) -> instr
+  (InstrJmpIf _ _) -> instr
+  (InstrLabel _  ) -> instr
 
 {- | Caclulate the space on the stack in bytes needed to store the variable.
 -}

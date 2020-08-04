@@ -38,15 +38,21 @@ varsRead :: Instr -> S.Set Var
 varsRead instr = S.fromList $ mapMaybe argFromVar argsRead
  where
   argsRead = case instr of
-    InstrAddQ src dst -> [src, dst]
-    InstrSubQ src dst -> [src, dst]
-    InstrMovQ src _   -> [src]
-    InstrNegQ  dst    -> [dst]
-    InstrPushQ src    -> [src]
-    InstrPopQ  _      -> []
-    InstrCallQ _      -> []
-    InstrJmp   _      -> []
-    InstrRetQ         -> []
+    InstrAddQ src dst     -> [src, dst]
+    InstrSubQ src dst     -> [src, dst]
+    InstrNegQ dst         -> [dst]
+    InstrXOrQ   src  dst  -> [src, dst]
+    InstrCmpQ   src2 src1 -> [src1, src2]
+    InstrMovQ   src  _    -> [src]
+    InstrMovZBQ _    _    -> [] -- Need to update if bsrc is changed to an Arg.
+    InstrSet    _    _    -> []
+    InstrPushQ src        -> [src]
+    InstrPopQ  _          -> []
+    InstrCallQ _          -> []
+    InstrRetQ             -> []
+    InstrJmp _            -> []
+    InstrJmpIf _ _        -> []
+    InstrLabel _          -> []
 
 {- | Get the set of variables that are written to by the instruction.
 -}
@@ -54,15 +60,21 @@ varsWritten :: Instr -> S.Set Var
 varsWritten instr = S.fromList $ mapMaybe argFromVar argsWritten
  where
   argsWritten = case instr of
-    InstrAddQ _ dst -> [dst]
-    InstrSubQ _ dst -> [dst]
-    InstrMovQ _ dst -> [dst]
-    InstrNegQ  dst  -> [dst]
-    InstrPushQ _    -> []
-    InstrPopQ  dst  -> [dst]
-    InstrCallQ _    -> []
-    InstrJmp   _    -> []
-    InstrRetQ       -> []
+    InstrAddQ _ dst   -> [dst]
+    InstrSubQ _ dst   -> [dst]
+    InstrNegQ dst     -> [dst]
+    InstrXOrQ   _ dst -> [dst]
+    InstrCmpQ   _ _   -> []
+    InstrMovQ   _ dst -> [dst]
+    InstrMovZBQ _ dst -> [dst]
+    InstrSet    _ _   -> [] -- Need to update if bdst is changed to an Arg.
+    InstrPushQ _      -> []
+    InstrPopQ  dst    -> [dst]
+    InstrCallQ _      -> []
+    InstrRetQ         -> []
+    InstrJmp _        -> []
+    InstrJmpIf _ _    -> []
+    InstrLabel _      -> []
 
 {- | Get the set of variables that are live before the instruction.
 -}

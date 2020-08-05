@@ -4,10 +4,11 @@ module PXIR.LivenessAnalysis.ConflictGraphSpec
 where
 
 import qualified Algebra.Graph                 as G
+import qualified Data.Map                      as M
 import qualified Data.Set                      as S
 import qualified PXIR.AST                      as P
 import           PXIR.LivenessAnalysis.UncoverLive
-                                                ( liveAfterEach )
+                                                ( liveAfter )
 import qualified PXIR.LivenessAnalysis.ConflictGraph
                                                as CG
 import           Test.Hspec
@@ -15,7 +16,7 @@ import           Test.Hspec
 spec :: Spec
 spec = do
   describe "make" $ do
-    it "builds graph from the output of `liveAfterEach` for a simple example"
+    it "builds graph from the output of `liveAfter` for a simple example"
       $ basicSpec
     it "builds graph with dst var verticies but no conflict edges"
       $ noConflictsSpec
@@ -38,8 +39,9 @@ basicSpec = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output = CG.make (liveAfterEach inputInstrs)
-  inputInstrs =
+  output      = CG.make (liveAfter (P.Label "start") inputBlocks)
+  inputBlocks = M.singleton
+    (P.Label "start")
     [ P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "v"))
     , P.InstrMovQ (P.ArgInt 46) (P.ArgVar (P.Var "w"))
     , P.InstrMovQ (P.ArgVar (P.Var "v")) (P.ArgVar (P.Var "x"))
@@ -84,8 +86,9 @@ noConflictsSpec = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output = CG.make (liveAfterEach inputInstrs)
-  inputInstrs =
+  output      = CG.make (liveAfter (P.Label "start") inputBlocks)
+  inputBlocks = M.singleton
+    (P.Label "start")
     [ P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "x"))
     , P.InstrMovQ (P.ArgInt 46) (P.ArgVar (P.Var "y"))
     , P.InstrJmp (P.Label "conclusion")
@@ -99,12 +102,13 @@ addqSpec = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output =
-    CG.make
-      $ [ ( P.InstrAddQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
-          , S.fromList [(P.Var "w"), (P.Var "x"), (P.Var "y"), (P.Var "z")]
-          )
-        ]
+  output                   = CG.make inputBlocksWithLiveAfter
+  inputBlocksWithLiveAfter = M.singleton
+    (P.Label "start")
+    [ ( P.InstrAddQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
+      , S.fromList [(P.Var "w"), (P.Var "x"), (P.Var "y"), (P.Var "z")]
+      )
+    ]
   expectedGraph =
     let w  = Left (P.Var "w")
         x  = Left (P.Var "x")
@@ -118,32 +122,36 @@ addqNoExtraLiveAfterSpec = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output =
-    CG.make $ [(P.InstrAddQ (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
+  output                   = CG.make inputBlocksWithLiveAfter
+  inputBlocksWithLiveAfter = M.singleton
+    (P.Label "start")
+    [(P.InstrAddQ (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
   expectedGraph = G.vertices [Left (P.Var "x")]
 
 addqNoDstVar = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output =
-    CG.make
-      $ [ ( P.InstrAddQ (P.ArgInt 1) (P.ArgReg P.RegRAX)
-          , S.fromList [(P.Var "x"), (P.Var "y"), (P.Var "z")]
-          )
-        ]
+  output                   = CG.make inputBlocksWithLiveAfter
+  inputBlocksWithLiveAfter = M.singleton
+    (P.Label "start")
+    [ ( P.InstrAddQ (P.ArgInt 1) (P.ArgReg P.RegRAX)
+      , S.fromList [(P.Var "x"), (P.Var "y"), (P.Var "z")]
+      )
+    ]
   expectedGraph = G.empty
 
 movqSpec = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output =
-    CG.make
-      $ [ ( P.InstrMovQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
-          , S.fromList [(P.Var "w"), (P.Var "x"), (P.Var "y"), (P.Var "z")]
-          )
-        ]
+  output                   = CG.make inputBlocksWithLiveAfter
+  inputBlocksWithLiveAfter = M.singleton
+    (P.Label "start")
+    [ ( P.InstrMovQ (P.ArgVar (P.Var "w")) (P.ArgVar (P.Var "x"))
+      , S.fromList [(P.Var "w"), (P.Var "x"), (P.Var "y"), (P.Var "z")]
+      )
+    ]
   expectedGraph =
     let w  = Left (P.Var "w")
         x  = Left (P.Var "x")
@@ -158,18 +166,21 @@ movqNoExtraLiveAfterSpec = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output =
-    CG.make $ [(P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
+  output                   = CG.make inputBlocksWithLiveAfter
+  inputBlocksWithLiveAfter = M.singleton
+    (P.Label "start")
+    [(P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "x")), S.empty)]
   expectedGraph = G.vertices [Left (P.Var "x")]
 
 movqNoDstVar = do
   G.vertexList output `shouldBe` G.vertexList expectedGraph
   G.edgeList output `shouldBe` G.edgeList expectedGraph
  where
-  output =
-    CG.make
-      $ [ ( P.InstrMovQ (P.ArgInt 1) (P.ArgReg P.RegRAX)
-          , S.fromList [(P.Var "x"), (P.Var "y"), (P.Var "z")]
-          )
-        ]
+  output                   = CG.make inputBlocksWithLiveAfter
+  inputBlocksWithLiveAfter = M.singleton
+    (P.Label "start")
+    [ ( P.InstrMovQ (P.ArgInt 1) (P.ArgReg P.RegRAX)
+      , S.fromList [(P.Var "x"), (P.Var "y"), (P.Var "z")]
+      )
+    ]
   expectedGraph = G.empty

@@ -3,6 +3,8 @@ module PXIR.LivenessAnalysis.UncoverLiveSpec
   )
 where
 
+import qualified Data.Map                      as M
+import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Set                      as S
 import qualified PXIR.AST                      as P
 import           PXIR.LivenessAnalysis.UncoverLive
@@ -10,16 +12,20 @@ import           Test.Hspec
 
 spec :: Spec
 spec = do
-  describe "liveAfterEach" $ do
+  describe "liveAfter" $ do
     it "returns sets of vars that are live after each instruction" $ basicSpec
 
 basicSpec =
-  let output = liveAfterEach inputInstrs
+  let output = liveAfter (P.Label "start") inputBlocks
   in  do
-        map fst output `shouldBe` inputInstrs
-        map snd output `shouldBe` expectedLiveAfters
+        let outputStartBlock =
+              fromMaybe (error "expected start block")
+                $ M.lookup (P.Label "start") output
+        map fst outputStartBlock `shouldBe` startInstrs
+        map snd outputStartBlock `shouldBe` expectedStartLiveAfters
  where
-  inputInstrs =
+  inputBlocks = M.singleton (P.Label "start") startInstrs
+  startInstrs =
     [ P.InstrMovQ (P.ArgInt 1) (P.ArgVar (P.Var "v"))
     , P.InstrMovQ (P.ArgInt 46) (P.ArgVar (P.Var "w"))
     , P.InstrMovQ (P.ArgVar (P.Var "v")) (P.ArgVar (P.Var "x"))
@@ -34,7 +40,7 @@ basicSpec =
     , P.InstrAddQ (P.ArgVar (P.Var "t.1")) (P.ArgReg P.RegRAX)
     , P.InstrJmp (P.Label "conclusion")
     ]
-  expectedLiveAfters = map
+  expectedStartLiveAfters = map
     varSetFromNames
     [ ["v"]
     , ["v", "w"]

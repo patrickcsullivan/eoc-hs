@@ -11,6 +11,20 @@ isDRef :: Arg -> Bool
 isDRef (ArgDeref _ _) = True
 isDRef _              = False
 
+{- | Return true iff the argument is a register.
+-}
+isReg :: Arg -> Bool
+isReg (ArgReg _) = True
+isReg _          = False
+
+{- | If the given instruction is a movq with matching a source and destination
+then remove the instruction.
+-}
+patchUnneededMovQ :: Instr -> [Instr]
+patchUnneededMovQ instr = case instr of
+  (InstrMovQ src dst) | src == dst -> []
+  _ -> [instr]
+
 {- | If the given instruction is allowed to have at most one memory reference
 argument then patch the instruction so that it adheres to this rule. 
 
@@ -27,14 +41,19 @@ patchDoubleRef instr = case instr of
     [InstrMovQ src (ArgReg RegRAX), InstrAddQ (ArgReg RegRAX) dst]
   (InstrSubQ src dst) | isDRef src && isDRef dst ->
     [InstrMovQ src (ArgReg RegRAX), InstrSubQ (ArgReg RegRAX) dst]
+  (InstrXOrQ src dst) | isDRef src && isDRef dst ->
+    [InstrMovQ src (ArgReg RegRAX), InstrXOrQ (ArgReg RegRAX) dst]
   _ -> [instr]
 
-{- | If the given instruction is a movq with matching a source and destination
-then remove the instruction.
+{- | The cmpq instruction should have a resgister as its second argument. If the
+given instruction is a cmpq and its second argument is not a register then patch
+the instruction by moving the second argument to the RAX register and then
+calling cmpq with RAX as the second argument.
 -}
-patchUnneededMovQ :: Instr -> [Instr]
-patchUnneededMovQ instr = case instr of
-  (InstrMovQ src dst) | src == dst -> []
+patchCmpQArg :: Instr -> [Instr]
+patchCmpQArg instr = case instr of
+  (InstrCmpQ src2 src1) | not $ isReg src1 ->
+    [InstrMovQ src1 (ArgReg RegRAX), InstrCmpQ src2 (ArgReg RegRAX)]
   _ -> [instr]
 
 {- | Perform various patches on the instructions that either optimize the
@@ -43,6 +62,7 @@ x86 assembly.
 -}
 patchInstructions :: [Instr] -> [Instr]
 patchInstructions instrs = do
-  i  <- instrs
-  i' <- patchUnneededMovQ i
-  patchDoubleRef i'
+  i   <- instrs
+  i'  <- patchUnneededMovQ i
+  i'' <- patchDoubleRef i'
+  patchCmpQArg i''

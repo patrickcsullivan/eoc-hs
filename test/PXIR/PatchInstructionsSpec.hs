@@ -16,6 +16,8 @@ spec = do
       $ movqMultMemRefsSpec
     it "removes movq instructions that have matching src and dst args"
       $ removeMovQSpec
+    it "patches cmpq instruction if its second arg if it is not a register"
+      $ cmpqRegArgSpec
 
 noMultMemRefsSpec = patchInstructions input `shouldBe` input
  where
@@ -52,4 +54,18 @@ removeMovQSpec = patchInstructions input `shouldBe` expected
   expected =
     [ P.InstrAddQ (P.ArgDeref P.RegRBP (-8)) (P.ArgReg P.RegRAX)
     , P.InstrJmp (P.Label "conclusion")
+    ]
+
+cmpqRegArgSpec = patchInstructions input `shouldBe` expected
+ where
+  input =
+    [ P.InstrCmpQ (P.ArgInt 0) (P.ArgDeref P.RegRBP (-8))
+    , P.InstrJmpIf P.CCE (P.Label "block1")
+    , P.InstrJmp (P.Label "block2")
+    ]
+  expected =
+    [ P.InstrMovQ (P.ArgDeref P.RegRBP (-8)) (P.ArgReg P.RegRAX)
+    , P.InstrCmpQ (P.ArgInt 0) (P.ArgReg P.RegRAX)
+    , P.InstrJmpIf P.CCE (P.Label "block1")
+    , P.InstrJmp (P.Label "block2")
     ]

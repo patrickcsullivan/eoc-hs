@@ -75,52 +75,61 @@ genVar srcVar = do
 {-| Replace variables the term with with generated unique variables. 
 -}
 uniquify :: Term -> CtxS Term
-uniquify TermRead = do
-  return TermRead
-
-uniquify (TermInt n) = do
-  return (TermInt n)
-
-uniquify (TermNeg trm) = do
-  trm' <- uniquify trm
-  return (TermNeg trm')
-
-uniquify (TermAdd trmX trmY) = do
-  trmX' <- uniquify trmX
-  trmY' <- uniquify trmY
-  return (TermAdd trmX' trmY')
-
-uniquify (TermVar var) = do
-  ctx <- get
-  let gendVar = case M.lookup var (ctxVarTab ctx) of
-        Just v  -> v
-        Nothing -> error $ "Undefined variable " ++ show var
-  return (TermVar gendVar)
-
-uniquify (TermLet var bnd bdy) = do
-    -- Uniquify the binding term.
-  bnd'               <- uniquify bnd
-
-  -- If var is already in the table then it must shadow a variable with the same
-  -- name. Hold onto the generated variable for the shadowed source variable.
-  maybeShadowGendVar <- lookupGendVar var
-
-  -- Generate a new unique variable name for the variable in the let.
-  gendVar            <- genVar var
-
-  -- Uniquify the body term with the newly generated variable in the var table.
-  bdy'               <- uniquify bdy
-
-  -- Restore the var table to its state before uniquifying the let term.
-  case maybeShadowGendVar of
-    -- Put the generated variable for the shadowed source variable back into the
-    -- var table.
-    Just shadowGendVar -> insertSrcToGendVar var shadowGendVar
-    -- Remove the variable from the var table since it will be out of scope for
-    -- other parts of the AST.
-    Nothing            -> deleteSrcToGendVar var
-
-  return (TermLet gendVar bnd' bdy')
+uniquify trm = case trm of
+  TermRead -> do
+    return TermRead
+  (TermBool b) -> do
+    return (TermBool b)
+  (TermInt n) -> do
+    return (TermInt n)
+  (TermEq t1 t2) -> do
+    t1' <- uniquify t1
+    t2' <- uniquify t2
+    return (TermEq t1' t2')
+  (TermLT t1 t2) -> do
+    t1' <- uniquify t1
+    t2' <- uniquify t2
+    return (TermLT t1' t2')
+  (TermNot t1) -> do
+    t1' <- uniquify t1
+    return (TermNot t1')
+  (TermNeg t1) -> do
+    t1' <- uniquify t1
+    return (TermNeg t1')
+  (TermAdd t1 t2) -> do
+    t1' <- uniquify t1
+    t2' <- uniquify t2
+    return (TermAdd t1' t2')
+  (TermVar var) -> do
+    ctx <- get
+    let gendVar = case M.lookup var (ctxVarTab ctx) of
+          Just v  -> v
+          Nothing -> error $ "Undefined variable " ++ show var
+    return (TermVar gendVar)
+  (TermLet var bnd bdy) -> do
+      -- Uniquify the binding term.
+    bnd'               <- uniquify bnd
+    -- If var is already in the table then it must shadow a variable with the same
+    -- name. Hold onto the generated variable for the shadowed source variable.
+    maybeShadowGendVar <- lookupGendVar var
+    -- Generate a new unique variable name for the variable in the let.
+    gendVar            <- genVar var
+    -- Uniquify the body term with the newly generated variable in the var table.
+    bdy'               <- uniquify bdy
+    -- Restore the var table to its state before uniquifying the let term.
+    case maybeShadowGendVar of
+      -- Put the generated variable for the shadowed source variable back into the
+      -- var table.
+      Just shadowGendVar -> insertSrcToGendVar var shadowGendVar
+      -- Remove the variable from the var table since it will be out of scope for
+      -- other parts of the AST.
+      Nothing            -> deleteSrcToGendVar var
+    return (TermLet gendVar bnd' bdy')
+  (TermIf t1 t2 t3) -> do
+    t1' <- uniquify t1
+    t2' <- uniquify t2
+    t3' <- uniquify t3
+    return (TermIf t1' t2' t3')
 
 {-| Replace variables the term with with generated unique variables. Each
 generated variable name contains an incremented integer with values starting at

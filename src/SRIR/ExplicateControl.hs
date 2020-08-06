@@ -191,7 +191,7 @@ explicateTail rTrm doAfter = case rTrm of
     insertBlock elsLabel elsTail
     explicateIfPred pred thnLabel elsLabel
 
-{-| Make the flow of control of the SRIR top level term explicit by converting
+{- | Make the flow of control of the SRIR top level term explicit by converting
 it into a CIR tail. Then assign the tail to the given label.
 -}
 explicateTop :: S.Term -> C.Label -> CtxS C.Tail
@@ -200,11 +200,15 @@ explicateTop trm label = do
   insertBlock label tail
   return tail
 
-{-| Make the flow of control of the SRIR top level term explicit by converting
-it into a set of labeled tails (aka blocks).
+{- | Make the flow of control of the SRIR top level term explicit by converting
+it into a set of labeled CIR tails (aka blocks).
 -}
-explicateControl :: S.Term -> C.Label -> Int -> (M.Map C.Label C.Tail, Int)
-explicateControl trm label nextLabel =
+explicateControl
+  :: S.Term  -- ^ Term to explicate
+  -> C.Label -- ^ Label for the starting block in the new CIR program
+  -> Int     -- ^ Next number to use when generating block names
+  -> (M.Map C.Label C.Tail, Int)
+explicateControl trm start nextLabel =
   let (_, (Ctx nextLabel' blocks)) =
-          runState (explicateTop trm label) (newCtx nextLabel)
+          runState (explicateTop trm start) (newCtx nextLabel)
   in  (blocks, nextLabel')

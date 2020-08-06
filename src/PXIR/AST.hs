@@ -68,12 +68,12 @@ data Instr
     | InstrLabel Label
     deriving Eq
 
-data Block = Block
-    { blockLabel :: Label
-    , blockInstrs :: [Instr]
-    } deriving Eq
+-- data Block = Block
+--     { blockLabel :: Label
+--     , blockInstrs :: [Instr]
+--     } deriving Eq
 
-data Program = Program { programBlocks :: M.Map Label Block } deriving Eq
+-- data Program = Program { programBlocks :: M.Map Label Block } deriving Eq
 
 instance Show ByteReg where
   show breg = case breg of
@@ -137,9 +137,3 @@ instance Show Instr where
     (InstrJmpIf CCG  label) -> "jg" ++ show label
     (InstrJmpIf CCGE label) -> "jge" ++ show label
     InstrLabel label        -> show label ++ ":"
-
-instance Show Block where
-  show (Block label instrs) = unlines (fmtLabel : fmtInstrs)
-   where
-    fmtLabel  = show label ++ ":"
-    fmtInstrs = fmap (\instr -> "    " ++ show instr) instrs

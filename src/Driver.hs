@@ -15,39 +15,34 @@ import qualified PXIR.AST                      as P
 import           PXIR.AssignHomes               ( assignHomes )
 import           PXIR.PatchInstructions         ( patchInstructions )
 
+startBlockName :: String
+startBlockName = "start"
+
 drive :: R.Term -> String
 drive rTrm =
-  let
-    sTrm               = shrink rTrm
-    (sTrm'  , nextVar) = uniquifyArgs sTrm 0
-    (sTrm'' , _      ) = simplifyArgs sTrm' nextVar
-    (cBlocks, _      ) = explicateControl sTrm'' (C.Label "start") 0
-    pBlocks            = selectInstructions cBlocks
-    (pBlocks', stackSpace) =
-      assignHomes (P.Label "start") availableRegs pBlocks
-    pInstrs     = fromMaybe undefined $ M.lookup (P.Label "start") pBlocks' --temporary
-    pInstrs'    = patchInstructions pInstrs
-    pBlock      = P.Block (P.Label "start") pInstrs'
-    stackSpace' = adjustStackSpace stackSpace
-    main        = mainBlock stackSpace' (P.Label "start")
-    conclusion  = conclusionBlock stackSpace'
-  in
-    writeBlocks main conclusion pBlock
+  let sTrm               = shrink rTrm
+      (sTrm'  , nextVar) = uniquifyArgs sTrm 0
+      (sTrm'' , _      ) = simplifyArgs sTrm' nextVar
+      (cBlocks, _      ) = explicateControl sTrm'' (C.Label startBlockName) 0
+      pBlocks            = selectInstructions cBlocks
+      (pBlocks', stackSpace) =
+          assignHomes (P.Label startBlockName) availableRegs pBlocks
+      pBlocks''   = M.map patchInstructions pBlocks'
+      stackSpace' = adjustStackSpace stackSpace
+      main        = mainBlock stackSpace' (P.Label startBlockName)
+      conclusion  = conclusionBlock stackSpace'
+  in  showProgram main conclusion pBlocks''
 
 availableRegs :: [P.Reg]
 availableRegs =
   [P.RegRDX, P.RegRCX, P.RegRSI, P.RegRDI, P.RegR8, P.RegR9, P.RegR10, P.RegR11]
 
-writeBlocks :: P.Block -> P.Block -> P.Block -> String
-writeBlocks main conclusion prog =
-  show prog ++ "\n" ++ "    .globl main\n" ++ show main ++ show conclusion
-
 adjustStackSpace :: Int -> Int
 adjustStackSpace stackSpace =
   if stackSpace `mod` 16 == 0 then stackSpace else stackSpace + 8
 
-mainBlock :: Int -> P.Label -> P.Block
-mainBlock stackSpace jumpTo = P.Block (P.Label "main") instrs
+mainBlock :: Int -> P.Label -> (P.Label, [P.Instr])
+mainBlock stackSpace jumpTo = ((P.Label "main"), instrs)
  where
   instrs =
     [ P.InstrPushQ (P.ArgReg P.RegRBP)
@@ -56,11 +51,31 @@ mainBlock stackSpace jumpTo = P.Block (P.Label "main") instrs
     , P.InstrJmp jumpTo
     ]
 
-conclusionBlock :: Int -> P.Block
-conclusionBlock stackSpace = P.Block (P.Label "conclusion") instrs
+conclusionBlock :: Int -> (P.Label, [P.Instr])
+conclusionBlock stackSpace = ((P.Label "conclusion"), instrs)
  where
   instrs =
     [ P.InstrAddQ (P.ArgInt stackSpace) (P.ArgReg P.RegRSP)
     , P.InstrPopQ (P.ArgReg P.RegRBP)
     , P.InstrRetQ
     ]
+
+showBlock :: (P.Label, [P.Instr]) -> String
+showBlock (label, instrs) = unlines (fmtLabel : fmtInstrs)
+ where
+  fmtLabel  = show label ++ ":"
+  fmtInstrs = fmap (\instr -> "    " ++ show instr) instrs
+
+showBlocks :: M.Map P.Label [P.Instr] -> String
+showBlocks blocks = unlines $ map showBlock $ M.toAscList blocks
+
+showProgram
+  :: (P.Label, [P.Instr])
+  -> (P.Label, [P.Instr])
+  -> M.Map P.Label [P.Instr]
+  -> String
+showProgram main conclusion prog =
+  showBlocks prog
+    ++ "    .globl main\n"
+    ++ showBlock main
+    ++ showBlock conclusion

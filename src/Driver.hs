@@ -78,4 +78,5 @@ showProgram main conclusion prog =
   showBlocks prog
     ++ "    .globl main\n"
     ++ showBlock main
+    ++ "\n"
     ++ showBlock conclusion

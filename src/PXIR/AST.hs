@@ -125,15 +125,15 @@ instance Show Instr where
     InstrRetQ               -> "retq"
     (InstrXOrQ src  dst   ) -> "xorq " ++ show src ++ ", " ++ show dst
     (InstrCmpQ src2 src1  ) -> "cmpq " ++ show src2 ++ ", " ++ show src1
-    (InstrSet  CCE  dst   ) -> "sete" ++ show dst
-    (InstrSet  CCL  dst   ) -> "setl" ++ show dst
-    (InstrSet  CCLE dst   ) -> "setle" ++ show dst
-    (InstrSet  CCG  dst   ) -> "setg" ++ show dst
-    (InstrSet  CCGE dst   ) -> "setge" ++ show dst
+    (InstrSet  CCE  dst   ) -> "sete " ++ show dst
+    (InstrSet  CCL  dst   ) -> "setl " ++ show dst
+    (InstrSet  CCLE dst   ) -> "setle " ++ show dst
+    (InstrSet  CCG  dst   ) -> "setg " ++ show dst
+    (InstrSet  CCGE dst   ) -> "setge " ++ show dst
     (InstrJmp label       ) -> "jmp " ++ show label
-    (InstrJmpIf CCE  label) -> "je" ++ show label
-    (InstrJmpIf CCL  label) -> "jl" ++ show label
-    (InstrJmpIf CCLE label) -> "jle" ++ show label
-    (InstrJmpIf CCG  label) -> "jg" ++ show label
-    (InstrJmpIf CCGE label) -> "jge" ++ show label
+    (InstrJmpIf CCE  label) -> "je " ++ show label
+    (InstrJmpIf CCL  label) -> "jl " ++ show label
+    (InstrJmpIf CCLE label) -> "jle " ++ show label
+    (InstrJmpIf CCG  label) -> "jg " ++ show label
+    (InstrJmpIf CCGE label) -> "jge " ++ show label
     InstrLabel label        -> show label ++ ":"

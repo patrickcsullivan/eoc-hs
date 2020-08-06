@@ -45,6 +45,7 @@ expected =
     \    movq %rsp, %rbp\n\
     \    subq $0, %rsp\n\
     \    jmp start\n\
+    \\n\
     \conclusion:\n\
     \    addq $0, %rsp\n\
     \    popq %rbp\n\

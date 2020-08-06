@@ -38,7 +38,7 @@ genVar = do
   put $ ctx { ctxNextVar = nextVar + 1 }
   return gendVar
 
-{-| Returns true iff the term is a complex operand.
+{-| Returns true iff the term is a complex arg.
 -}
 isComplex :: Term -> Bool
 isComplex (TermInt _) = False
@@ -50,41 +50,59 @@ operation is either a value term or a variable term.
 -}
 simplify :: Term -> CtxS Term
 simplify trm = case trm of
-  TermRead     -> return TermRead -- No args so just return.
-  (TermInt n ) -> return (TermInt n) -- Primitive so no args so just return.
-  (TermNeg op) -> if isComplex op
-    then do
-      gendVar <- genVar
-      op'     <- simplify op
-      return (TermLet gendVar op' (TermNeg (TermVar gendVar)))
-    else return (TermNeg op)
-  (TermAdd opX opY) -> case (isComplex opX, isComplex opY) of
-    (True, True) -> do
-      gendVarX <- genVar
-      opX'     <- simplify opX
-      gendVarY <- genVar
-      opY'     <- simplify opY
-      return
-        (TermLet
-          gendVarX
-          opX'
-          (TermLet gendVarY opY' (TermAdd (TermVar gendVarX) (TermVar gendVarY))
-          )
-        )
-    (True, False) -> do
-      gendVarX <- genVar
-      opX'     <- simplify opX
-      return (TermLet gendVarX opX' (TermAdd (TermVar gendVarX) opY))
-    (False, True) -> do
-      gendVarY <- genVar
-      opY'     <- simplify opY
-      return (TermLet gendVarY opY' (TermAdd opX (TermVar gendVarY)))
-    (False, False) -> return (TermAdd opX opY)
+  TermRead              -> return TermRead
+  (TermBool b         ) -> return (TermBool b)
+  (TermInt  n         ) -> return (TermInt n)
+  (TermEq arg1 arg2   ) -> simplifyOperator2 TermEq arg1 arg2
+  (TermLT arg1 arg2   ) -> simplifyOperator2 TermLT arg1 arg2
+  (TermNot arg        ) -> simplifyOperator1 TermNot arg
+  (TermNeg arg        ) -> simplifyOperator1 TermNeg arg
+  (TermAdd arg1 arg2  ) -> simplifyOperator2 TermAdd arg1 arg2
   (TermVar var        ) -> return (TermVar var)
   (TermLet var bnd bdy) -> do
     bnd' <- simplify bnd
     bdy' <- simplify bdy
     return (TermLet var bnd' bdy')
+  (TermIf t1 t2 t3) -> do
+    t1' <- simplify t1
+    t2' <- simplify t2
+    t3' <- simplify t3
+    return (TermIf t1' t2' t3')
+
+simplifyOperator1 :: (Term -> Term) -> Term -> CtxS Term
+simplifyOperator1 mkOperator arg = if isComplex arg
+  then do
+    gendVar <- genVar
+    arg'    <- simplify arg
+    return (TermLet gendVar arg' (mkOperator (TermVar gendVar)))
+  else return (mkOperator arg)
+
+simplifyOperator2 :: (Term -> Term -> Term) -> Term -> Term -> CtxS Term
+simplifyOperator2 mkOperator arg1 arg2 =
+  case (isComplex arg1, isComplex arg2) of
+    (True, True) -> do
+      gendVarX <- genVar
+      arg1'    <- simplify arg1
+      gendVarY <- genVar
+      arg2'    <- simplify arg2
+      return
+        (TermLet
+          gendVarX
+          arg1'
+          (TermLet gendVarY
+                   arg2'
+                   (mkOperator (TermVar gendVarX) (TermVar gendVarY))
+          )
+        )
+    (True, False) -> do
+      gendVarX <- genVar
+      arg1'    <- simplify arg1
+      return (TermLet gendVarX arg1' (mkOperator (TermVar gendVarX) arg2))
+    (False, True) -> do
+      gendVarY <- genVar
+      arg2'    <- simplify arg2
+      return (TermLet gendVarY arg2' (mkOperator arg1 (TermVar gendVarY)))
+    (False, False) -> return (mkOperator arg1 arg2)
 
 {-| Add new variable bindings into the term so that every argument to an
 operation is either a value term or a variable term. Each generated variable

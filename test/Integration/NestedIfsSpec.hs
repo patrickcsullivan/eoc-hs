@@ -19,7 +19,7 @@ input = R.TermIf
             (R.TermEq R.TermRead (R.TermInt 2))
   )
   (R.TermAdd (R.TermInt 10) (R.TermInt 32))
-  (R.TermAdd (R.TermInt 700) (R.TermInt 77))
+  (R.TermSub (R.TermInt 700) (R.TermInt 77))
 
 expected :: String
 expected = ""

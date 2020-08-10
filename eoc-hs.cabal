@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1e3ce10b2c80eb24402800a53132c62f8058b2db491d647c10cf0e13b5a08efb
+-- hash: 81d5699518a393b7550a3d4ae05dbf2c3cea7374079dc3d07843d3a83c3850e9
 
 name:           eoc-hs
 version:        0.1.0.0
@@ -39,6 +39,9 @@ library
       PXIR.LivenessAnalysis.UncoverLive
       PXIR.PatchInstructions
       RIR.AST
+      RIR.Parser
+      RIR.Parser.STerm
+      RIR.Parser.Transform
       RIR.Shrink
       RIR.Ty
       SRIR.AST
@@ -54,6 +57,7 @@ library
     , base >=4.7 && <5
     , containers
     , mtl
+    , parsec
     , text
   default-language: Haskell2010
 
@@ -70,6 +74,7 @@ executable eoc-hs-exe
     , containers
     , eoc-hs
     , mtl
+    , parsec
     , text
   default-language: Haskell2010
 
@@ -87,6 +92,7 @@ test-suite eoc-hs-test
       PXIR.LivenessAnalysis.ControlFlowGraphSpec
       PXIR.LivenessAnalysis.UncoverLiveSpec
       PXIR.PatchInstructionsSpec
+      RIR.ParserSpec
       RIR.TySpec
       SRIR.ExplicateControlSpec
       SRIR.SimplifyArgsSpec
@@ -102,5 +108,6 @@ test-suite eoc-hs-test
     , eoc-hs
     , hspec
     , mtl
+    , parsec
     , text
   default-language: Haskell2010

@@ -37,26 +37,27 @@ instance Show Var where
   show (Var name) = name
 
 instance Show Term where
-  show trm = indentTerm 0 trm
+  show = indentTerm 0
 
 indentTerm :: Int -> Term -> String
 indentTerm ws trm = replicate ws ' ' ++ trmStr
  where
   trmStr = case trm of
-    TermRead      -> "read"
+    TermRead       -> "read"
     -- Value terms
-    TermBool b    -> show b
-    TermInt  n    -> show n
+    TermBool True  -> "#t"
+    TermBool False -> "#f"
+    TermInt  n     -> show n
     -- Integer comparison operators
-    TermEq t1 t2  -> operator "eq?" [t1, t2]
-    TermLT t1 t2  -> operator "<" [t1, t2]
+    TermEq t1 t2   -> operator "=" [t1, t2]
+    TermLT t1 t2   -> operator "<" [t1, t2]
     -- Logical operators
-    TermNot t1    -> operator "not" [t1]
+    TermNot t1     -> operator "not" [t1]
     -- Arithmetic operators
-    TermNeg t1    -> operator "-" [t1]
-    TermAdd t1 t2 -> operator "+" [t1, t2]
+    TermNeg t1     -> operator "-" [t1]
+    TermAdd t1 t2  -> operator "+" [t1, t2]
     -- Language constructs
-    TermVar var   -> show var
+    TermVar var    -> show var
     TermLet var bnd bdy ->
       "(let (["
         ++ show var

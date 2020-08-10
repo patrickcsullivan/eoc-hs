@@ -49,7 +49,7 @@ indentTerm :: Int -> Term -> String
 indentTerm ws trm = replicate ws ' ' ++ trmStr
  where
   trmStr = case trm of
-    TermRead      -> "read"
+    TermRead      -> "(read)"
     -- Value terms
     TermBool b    -> show b
     TermInt  n    -> show n
@@ -85,4 +85,5 @@ indentTerm ws trm = replicate ws ' ' ++ trmStr
         ++ ")"
 
 operator :: String -> [Term] -> String
-operator name args = "(" ++ name ++ (unwords $ map show args) ++ ")"
+operator name args = "(" ++ unwords elems ++ ")"
+  where elems = name : map show args
